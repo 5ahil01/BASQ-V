@@ -1,7 +1,7 @@
 import os
 from langchain_qdrant import QdrantVectorStore
 from langchain_huggingface import HuggingFaceEmbeddings
-from vector_db import get_qdrant_client
+from app.vector_db import get_qdrant_client
 from dotenv import load_dotenv
 
 load_dotenv()
