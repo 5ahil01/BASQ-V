@@ -11,3 +11,5 @@ sentence-transformers
 langchain-community
 langchain-huggingface
 langchain-qdrant
+langchain-google-genai
+langchain-groq
