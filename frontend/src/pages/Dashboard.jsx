@@ -7,6 +7,77 @@ import ErrorBox from '../components/ErrorBox';
 import '../styles/dashboard.css';
 import { sendQuery } from '../services/api';
 
+/**
+ * Utility function to determine chart type and transform data based on query and data
+ * @param {string} query - The user's query text
+ * @param {Array} data - The table data from backend
+ * @returns {object} - {chartType: string, transformedData: Array}
+ */
+const determineChartType = (query, data) => {
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return { chartType: 'table', transformedData: data };
+  }
+
+  // Check for single scalar value (KPI)
+  if (data.length === 1 && Object.keys(data[0]).length === 2) {
+    const keys = Object.keys(data[0]);
+    const value = data[0][keys[1]];
+    if (typeof value === 'number' && !isNaN(value)) {
+      return {
+        chartType: 'kpi',
+        transformedData: [{ label: keys[0], value: value }]
+      };
+    }
+  }
+
+  // Check for temporal data (line chart)
+  const queryLower = query.toLowerCase();
+  const temporalKeywords = ['time', 'date', 'month', 'year', 'day', 'over time', 'trend', 'historical'];
+  const hasTemporalKeyword = temporalKeywords.some(keyword => queryLower.includes(keyword));
+
+  // Check if data has date-like columns
+  const hasDateColumn = data.some(row => {
+    return Object.values(row).some(value => {
+      return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value); // YYYY-MM-DD format
+    });
+  });
+
+  if (hasTemporalKeyword || hasDateColumn) {
+    // Transform data for line chart - assume first column is label, second is value
+    const transformedData = data.map(row => {
+      const keys = Object.keys(row);
+      return {
+        label: row[keys[0]]?.toString() || 'Unknown',
+        value: typeof row[keys[1]] === 'number' ? row[keys[1]] : 0
+      };
+    });
+    return { chartType: 'line', transformedData };
+  }
+
+  // Check for categorical data (< 6 items) - pie chart
+  if (data.length < 6) {
+    // Transform data for pie chart
+    const transformedData = data.map(row => {
+      const keys = Object.keys(row);
+      return {
+        label: row[keys[0]]?.toString() || 'Unknown',
+        value: typeof row[keys[1]] === 'number' ? row[keys[1]] : 0
+      };
+    });
+    return { chartType: 'pie', transformedData };
+  }
+
+  // Default to bar chart for comparative data (> 6 items)
+  const transformedData = data.map(row => {
+    const keys = Object.keys(row);
+    return {
+      label: row[keys[0]]?.toString() || 'Unknown',
+      value: typeof row[keys[1]] === 'number' ? row[keys[1]] : 0
+    };
+  });
+  return { chartType: 'bar', transformedData };
+};
+
 const Dashboard = () => {
   // State Management - Central orchestrator state
   const [queryText, setQueryText] = useState('');
@@ -33,9 +104,11 @@ const Dashboard = () => {
       // Step 3: Store response in state
       // Backend response: {query, sql_query, result: List[Dict[str, Any]]}
       // Map to frontend expected format
+      const { chartType, transformedData } = determineChartType(query, response.result);
       setResponseData({
-        charts: [], // No charts from backend yet
-        tables: response.result // Backend returns table data in 'result'
+        charts: transformedData, // Use transformed data for charts
+        tables: response.result, // Backend returns table data in 'result'
+        chartType: chartType // Add determined chart type
       });
       setContextUsed({
         sources: [], // No context from backend yet
@@ -90,8 +163,9 @@ const Dashboard = () => {
       <div className="dashboard-content">
         {/* Charts - Center */}
         <div className="charts-section">
-          <ChartView 
-            data={responseData?.charts} 
+          <ChartView
+            data={responseData?.charts}
+            chartType={responseData?.chartType}
             loading={loading}
           />
         </div>

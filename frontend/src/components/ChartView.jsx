@@ -29,16 +29,19 @@ const ChartView = ({ data, chartType }) => {
       switch (chartType?.toLowerCase()) {
         case 'bar':
           return renderBarChart();
-        
+
         case 'line':
           return renderLineChart();
-        
+
         case 'pie':
           return renderPieChart();
-        
+
+        case 'kpi':
+          return renderKPI();
+
         case 'table':
           return renderTableView();
-        
+
         default:
           // Fallback for unsupported chart type
           return renderFallbackView();
@@ -152,8 +155,8 @@ const ChartView = ({ data, chartType }) => {
               const percentage = ((item.value / getTotalValue()) * 100).toFixed(1);
               return (
                 <div key={index} className="pie-item">
-                  <div 
-                    className="pie-color" 
+                  <div
+                    className="pie-color"
                     style={{ backgroundColor: getColor(index) }}
                   ></div>
                   <span className="pie-label">
@@ -163,6 +166,28 @@ const ChartView = ({ data, chartType }) => {
               );
             })}
           </div>
+        </div>
+      </div>
+    );
+  };
+
+  // KPI Card Implementation
+  const renderKPI = () => {
+    if (!Array.isArray(data) || data.length !== 1) {
+      return renderFallbackView();
+    }
+
+    const item = data[0];
+    const keys = Object.keys(item);
+    const label = keys[0];
+    const value = item[keys[1]];
+
+    return (
+      <div className="chart-container kpi-card">
+        <h3>KPI</h3>
+        <div className="kpi-content">
+          <div className="kpi-value">{value}</div>
+          <div className="kpi-label">{label}</div>
         </div>
       </div>
     );
