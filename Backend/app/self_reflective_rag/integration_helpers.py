@@ -9,9 +9,10 @@ try:
     from app.services.rag_service import RagService
     from app.hallucination_detection.confidence_scorer import SQLConfidenceScorer
     from app.prompts import SQL_GENERATION_TEMPLATE
-except ImportError:
+except ImportError as e:
     # Fallback for testing environment where 'app' might not be root
-    print("Warning: Could not import existing components directly. Using mocks or relative imports if available.")
+    print(f"Warning: Could not import existing components directly. Error: {e}")
+    print("Using mocks or relative imports if available.")
     RagService = None
     SQLConfidenceScorer = None
     SQL_GENERATION_TEMPLATE = ""
