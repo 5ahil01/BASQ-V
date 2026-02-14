@@ -1,192 +1,201 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import QueryInput from '../components/QueryInput';
-import ChartView from '../components/ChartView';
-import TableView from '../components/TableView';
-import ContextPanel from '../components/ContextPanel';
+import ClarificationModal from '../components/ClarificationModal';
+import ResultsPanel from '../components/ResultsPanel';
 import ErrorBox from '../components/ErrorBox';
+import LoadingOverlay from '../components/LoadingOverlay';
+import HeaderBar from '../components/HeaderBar';
+import { sendQuery, sendClarification } from '../services/api';
+import { normalizeResponse } from '../utils/responseMapper';
 import '../styles/dashboard.css';
-import { sendQuery } from '../services/api';
 
 /**
- * Utility function to determine chart type and transform data based on query and data
- * @param {string} query - The user's query text
- * @param {Array} data - The table data from backend
- * @returns {object} - {chartType: string, transformedData: Array}
+ * Dashboard Component
+ * Central state store for the BASQ-V Analytics UI
+ * Handles: query input, clarification, results display, error handling
  */
-const determineChartType = (query, data) => {
-  if (!data || !Array.isArray(data) || data.length === 0) {
-    return { chartType: 'table', transformedData: data };
-  }
-
-  // Check for single scalar value (KPI)
-  if (data.length === 1 && Object.keys(data[0]).length === 2) {
-    const keys = Object.keys(data[0]);
-    const value = data[0][keys[1]];
-    if (typeof value === 'number' && !isNaN(value)) {
-      return {
-        chartType: 'kpi',
-        transformedData: [{ label: keys[0], value: value }]
-      };
-    }
-  }
-
-  // Check for temporal data (line chart)
-  const queryLower = query.toLowerCase();
-  const temporalKeywords = ['time', 'date', 'month', 'year', 'day', 'over time', 'trend', 'historical'];
-  const hasTemporalKeyword = temporalKeywords.some(keyword => queryLower.includes(keyword));
-
-  // Check if data has date-like columns
-  const hasDateColumn = data.some(row => {
-    return Object.values(row).some(value => {
-      return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value); // YYYY-MM-DD format
-    });
-  });
-
-  if (hasTemporalKeyword || hasDateColumn) {
-    // Transform data for line chart - assume first column is label, second is value
-    const transformedData = data.map(row => {
-      const keys = Object.keys(row);
-      return {
-        label: row[keys[0]]?.toString() || 'Unknown',
-        value: typeof row[keys[1]] === 'number' ? row[keys[1]] : 0
-      };
-    });
-    return { chartType: 'line', transformedData };
-  }
-
-  // Check for categorical data (< 6 items) - pie chart
-  if (data.length < 6) {
-    // Transform data for pie chart
-    const transformedData = data.map(row => {
-      const keys = Object.keys(row);
-      return {
-        label: row[keys[0]]?.toString() || 'Unknown',
-        value: typeof row[keys[1]] === 'number' ? row[keys[1]] : 0
-      };
-    });
-    return { chartType: 'pie', transformedData };
-  }
-
-  // Default to bar chart for comparative data (> 6 items)
-  const transformedData = data.map(row => {
-    const keys = Object.keys(row);
-    return {
-      label: row[keys[0]]?.toString() || 'Unknown',
-      value: typeof row[keys[1]] === 'number' ? row[keys[1]] : 0
-    };
-  });
-  return { chartType: 'bar', transformedData };
-};
-
 const Dashboard = () => {
-  // State Management - Central orchestrator state
-  const [queryText, setQueryText] = useState('');
+  // Central state management
+  const [sessionId, setSessionId] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [responseData, setResponseData] = useState(null);
-  const [contextUsed, setContextUsed] = useState(null);
-  const [verificationStatus, setVerificationStatus] = useState(null);
+  const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
 
+  // Clarification state
+  const [clarificationState, setClarificationState] = useState({
+    isOpen: false,
+    question: '',
+    options: [],
+    sessionId: null
+  });
+
   /**
-   * Main query handler - orchestrates the entire flow
-   * Flow: User enters query → Query sent to backend → Response stored → Components re-render
+   * Handle query submission
+   * Flow: User enters query → API call → Handle response states
    */
-  const handleQuery = async (query) => {
-    // Step 1: Update query text and set loading state
-    setQueryText(query);
+  const handleQuery = useCallback(async (query) => {
+    // Set loading state
     setLoading(true);
     setError(null);
+    setResponse(null);
 
     try {
-      // Step 2: Call API (backend)
-      const response = await sendQuery(query);
+      // Call API with query and sessionId if available
+      const apiResponse = await sendQuery(query, sessionId);
 
-      // Step 3: Store response in state
-      // Backend response: {query, sql_query, result: List[Dict[str, Any]]}
-      // Map to frontend expected format
-      const { chartType, transformedData } = determineChartType(query, response.result);
-      setResponseData({
-        charts: transformedData, // Use transformed data for charts
-        tables: response.result, // Backend returns table data in 'result'
-        chartType: chartType // Add determined chart type
-      });
-      setContextUsed({
-        sources: [], // No context from backend yet
-        metadata: { sql_query: response.sql_query } // Include generated SQL
-      });
-      setVerificationStatus({
-        status: 'pending', // No verification from backend yet
-        confidence: null
-      });
+      // Normalize the response using responseMapper
+      const normalizedResponse = normalizeResponse(apiResponse);
 
-      console.log('Query submitted:', query);
-      console.log('Response received:', response);
+      // Handle different response states
+      if (normalizedResponse.status === 'clarification_required') {
+        // Open clarification modal
+        setSessionId(normalizedResponse.sessionId);
+        setClarificationState({
+          isOpen: true,
+          question: normalizedResponse.question,
+          options: normalizedResponse.options,
+          sessionId: normalizedResponse.sessionId
+        });
+        setResponse(null);
+      } else if (normalizedResponse.status === 'success' || 
+                 normalizedResponse.status === 'rejected' ||
+                 normalizedResponse.status === 'error') {
+        // Store sessionId for future requests
+        if (normalizedResponse.sessionId) {
+          setSessionId(normalizedResponse.sessionId);
+        }
+        setResponse(normalizedResponse);
+      } else {
+        // Unknown status - treat as error
+        setError('Received an unknown response from the server. Please try again.');
+      }
+
     } catch (err) {
-      // Step 4: Handle errors
+      // Handle API errors
       setError(err.message || 'An error occurred while processing your query');
-      // Clear previous data on error
-      setResponseData(null);
-      setContextUsed(null);
-      setVerificationStatus(null);
+      console.error('Query error:', err);
     } finally {
-      // Step 5: Reset loading state
       setLoading(false);
     }
-  };
+  }, [sessionId]);
+
+  /**
+   * Handle clarification submission
+   * Flow: User answers clarification → API call → Handle response
+   */
+  const handleClarificationSubmit = useCallback(async (answer, clarificationSessionId) => {
+    setLoading(true);
+    setError(null);
+    setClarificationState(prev => ({ ...prev, isOpen: false }));
+
+    try {
+      // Send clarification answer to backend
+      const apiResponse = await sendClarification(answer, clarificationSessionId);
+
+      // Normalize the response
+      const normalizedResponse = normalizeResponse(apiResponse);
+
+      // Handle the response
+      if (normalizedResponse.status === 'success' || 
+          normalizedResponse.status === 'rejected' ||
+          normalizedResponse.status === 'error') {
+        // Store sessionId for future requests
+        if (normalizedResponse.sessionId) {
+          setSessionId(normalizedResponse.sessionId);
+        }
+        setResponse(normalizedResponse);
+      } else if (normalizedResponse.status === 'clarification_required') {
+        // Another clarification is needed
+        setSessionId(normalizedResponse.sessionId);
+        setClarificationState({
+          isOpen: true,
+          question: normalizedResponse.question,
+          options: normalizedResponse.options,
+          sessionId: normalizedResponse.sessionId
+        });
+      } else {
+        setError('Received an unknown response after clarification. Please try again.');
+      }
+
+    } catch (err) {
+      setError(err.message || 'An error occurred while submitting your answer');
+      console.error('Clarification error:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  /**
+   * Handle clarification cancellation
+   */
+  const handleClarificationCancel = useCallback(() => {
+    setClarificationState({
+      isOpen: false,
+      question: '',
+      options: [],
+      sessionId: null
+    });
+    setError(null);
+  }, []);
+
+  /**
+   * Handle error close
+   */
+  const handleErrorClose = useCallback(() => {
+    setError(null);
+  }, []);
 
   return (
     <div className="dashboard">
-      <div className="dashboard-header">
-        <h1>BASQ-V Dashboard</h1>
-      </div>
+      {/* Header Bar */}
+      <HeaderBar 
+        title="BASQ-V" 
+        subtitle="Business-Aware Self-Reflective RAG Analytics"
+      />
 
-      {/* Query Input - Top */}
+      {/* Query Input Section */}
       <div className="query-section">
-        <QueryInput 
-          onSubmit={handleQuery} 
+        <QueryInput
+          onSubmit={handleQuery}
           loading={loading}
-          currentQuery={queryText}
+          disabled={loading}
         />
       </div>
 
       {/* Error Display */}
       {error && (
         <div className="error-section">
-          <ErrorBox 
-            error={error} 
-            onClose={() => setError(null)} 
+          <ErrorBox
+            error={error}
+            onClose={handleErrorClose}
           />
         </div>
       )}
 
-      {/* Main Content Area */}
-      <div className="dashboard-content">
-        {/* Charts - Center */}
-        <div className="charts-section">
-          <ChartView
-            data={responseData?.charts}
-            chartType={responseData?.chartType}
-            loading={loading}
-          />
-        </div>
-
-        {/* Table - Below Charts */}
-        <div className="table-section">
-          <TableView 
-            data={responseData?.tables} 
-            loading={loading}
-          />
-        </div>
-      </div>
-
-      {/* Context + Verification - Bottom/Side */}
-      <div className="context-section">
-        <ContextPanel 
-          context={contextUsed}
-          verification={verificationStatus}
+      {/* Results Panel */}
+      <div className="results-section">
+        <ResultsPanel 
+          response={response}
           loading={loading}
         />
       </div>
+
+      {/* Clarification Modal */}
+      <ClarificationModal
+        isOpen={clarificationState.isOpen}
+        sessionId={clarificationState.sessionId}
+        clarificationQuestion={clarificationState.question}
+        options={clarificationState.options}
+        onSubmit={handleClarificationSubmit}
+        onCancel={handleClarificationCancel}
+        loading={loading}
+      />
+
+      {/* Loading Overlay */}
+      <LoadingOverlay 
+        isLoading={loading}
+        message="Processing your query..."
+      />
     </div>
   );
 };

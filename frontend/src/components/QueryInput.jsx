@@ -8,7 +8,7 @@ import React, { useState } from 'react';
  * - onSubmit(query): Function to call when user submits query
  * - loading: Boolean to disable input while processing
  */
-const QueryInput = ({ onSubmit, loading }) => {
+const QueryInput = ({ onSubmit, loading, disabled = false }) => {
   const [inputText, setInputText] = useState('');
   const [validationError, setValidationError] = useState('');
 
@@ -46,10 +46,12 @@ const QueryInput = ({ onSubmit, loading }) => {
   };
 
   /**
-   * Handle Enter key press for quick submission
+   * Handle key down for quick submission
+   * Note: Shift+Enter should allow new lines in textarea
    */
-  const handleKeyPress = (e) => {
+  const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
       handleSubmit(e);
     }
   };
@@ -58,25 +60,25 @@ const QueryInput = ({ onSubmit, loading }) => {
     <div className="query-input-container">
       <form onSubmit={handleSubmit} className="query-form">
         <div className="input-wrapper">
-          {/* Text Input */}
-          <input
-            type="text"
-            className={`query-input ${validationError ? 'error' : ''}`}
-            placeholder="Enter your query here..."
+          {/* Text Area Input */}
+          <textarea
+            className={`query-textarea ${validationError ? 'error' : ''}`}
+            placeholder="Enter your query here... (Shift+Enter for new line)"
             value={inputText}
             onChange={handleInputChange}
-            onKeyPress={handleKeyPress}
-            disabled={loading}
+            onKeyDown={handleKeyDown}
+            disabled={loading || disabled}
             aria-label="Query input"
             aria-invalid={!!validationError}
             aria-describedby={validationError ? "query-error" : undefined}
+            rows={3}
           />
           
           {/* Submit Button */}
           <button
             type="submit"
             className="submit-button"
-            disabled={loading || !inputText.trim()}
+            disabled={loading || !inputText.trim() || disabled}
             aria-label="Submit query"
           >
             {loading ? (
