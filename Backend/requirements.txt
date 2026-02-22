@@ -13,3 +13,4 @@ langchain-huggingface
 langchain-qdrant
 langchain-google-genai
 langchain-groq
+sqlparse

@@ -1,0 +1,4 @@
+Project root added to path: D:\BASQ-V\Backend
+FAILURE: Could not import RagService. Error: No module named 'langchain_huggingface'
+FAILURE: Could not import SQLConfidenceScorer. Error: No module named 'schema_validator'
+SUCCESS: Imported SQL_GENERATION_TEMPLATE

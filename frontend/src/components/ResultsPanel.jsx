@@ -1,93 +1,116 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import ChartView from './ChartView';
-import TableView from './TableView';
-import ExplainabilityPanel from './ExplainabilityPanel';
-import VerificationBadge from './VerificationBadge';
-import ConfidenceIndicator from './ConfidenceIndicator';
+import React from "react";
+import PropTypes from "prop-types";
+import ChartView from "./ChartView";
+import TableView from "./TableView";
+import ExplainabilityPanel from "./ExplainabilityPanel";
+import VerificationBadge from "./VerificationBadge";
+import ConfidenceIndicator from "./ConfidenceIndicator";
 
-/**
- * ResultsPanel Component
- * Central component to display query results - charts, table, and explainability
- * Handles both success and rejected/error states
- */
+/* ----------------------- */
+/* Panel Wrapper Component */
+/* ----------------------- */
+const PanelWrapper = ({ children, className = "" }) => (
+  <div
+    className={`relative w-full rounded-[20px] border border-white/10
+    bg-slate-800/70 backdrop-blur-xl p-8
+    shadow-xl flex flex-col gap-6 overflow-hidden
+    animate-fade-in ${className}`}
+  >
+    {/* Gradient Top Border */}
+    <div
+      className="pointer-events-none absolute inset-x-0 top-0 h-1
+      bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400"
+    />
+    {children}
+  </div>
+);
+
+/* ----------------------- */
+/* Section Title */
+/* ----------------------- */
+const SectionTitle = ({ children }) => (
+  <h2 className="text-[1.6rem] font-bold bg-gradient-to-br from-slate-200 to-slate-300 bg-clip-text text-transparent">
+    {children}
+  </h2>
+);
+
+/* ----------------------- */
+/* Main Results Panel */
+/* ----------------------- */
 const ResultsPanel = ({ response, loading }) => {
-  // If no response and not loading, don't render
-  if (!response && !loading) {
-    return null;
-  }
+  if (!response && !loading) return null;
 
-  // If loading, show loading state
+  /* ---------- Loading State ---------- */
   if (loading) {
     return (
-      <div className="results-panel results-loading">
-        <p>Loading results...</p>
-      </div>
+      <PanelWrapper>
+        <div className="flex h-40 items-center justify-center text-slate-300 italic text-[1.1rem]">
+          Loading results...
+        </div>
+      </PanelWrapper>
     );
   }
 
-  // Handle rejected/error state
-  if (response.status === 'rejected' || response.status === 'error') {
+  /* ---------- Error / Rejected ---------- */
+  if (response.status === "rejected" || response.status === "error") {
     return (
-      <div className="results-panel results-rejected">
-        <div className="results-header">
-          <h2>Query Result</h2>
-        </div>
-        
-        {/* Show verification status for rejected queries */}
+      <PanelWrapper>
+        <SectionTitle>Query Result</SectionTitle>
+
         {response.verification && (
-          <div className="verification-status">
-            <VerificationBadge 
-              verificationStatus={response.verification.status} 
-              message={response.verification.message}
-            />
-          </div>
+          <VerificationBadge
+            verificationStatus={response.verification.status}
+            message={response.verification.message}
+          />
         )}
 
-        {/* Show error message */}
         {response.error && (
-          <div className="error-message-box">
-            <h3>Query Rejected</h3>
-            <p>{response.error.message}</p>
+          <div className="rounded-xl border border-red-400/30 bg-red-500/10 px-5 py-4">
+            <h3 className="mb-2 text-xl font-bold text-red-300">
+              Query Rejected
+            </h3>
+            <p className="text-slate-300">{response.error.message}</p>
+
             {response.error.code && (
-              <small>Error Code: {response.error.code}</small>
+              <small className="mt-2 block text-sm text-slate-400">
+                Error Code: {response.error.code}
+              </small>
             )}
           </div>
         )}
 
-        {/* Also show explainability if available */}
         {response.explainability && (
-          <ExplainabilityPanel 
-            explainability={response.explainability} 
+          <ExplainabilityPanel
+            explainability={response.explainability}
             sql={response.sql}
           />
         )}
-      </div>
+      </PanelWrapper>
     );
   }
 
-  // Handle success state
-  if (response.status === 'success') {
-    // Transform data for chart
-    const chartData = transformDataForChart(response.data, response.chartSuggestion);
+  /* ---------- Success ---------- */
+  if (response.status === "success") {
+    const chartData = transformDataForChart(
+      response.data,
+      response.chartSuggestion,
+    );
 
     return (
-      <div className="results-panel results-success">
-        <div className="results-header">
-          <h2>Query Results</h2>
-        </div>
+      <PanelWrapper>
+        <SectionTitle>Query Results</SectionTitle>
 
-        {/* Show verification and confidence */}
-        <div className="results-meta">
+        {/* Verification & Confidence */}
+        <div className="flex flex-wrap items-center gap-4 border-b border-white/5 pb-5">
           {response.verification && (
-            <VerificationBadge 
+            <VerificationBadge
               verificationStatus={response.verification.status}
               message={response.verification.message}
             />
           )}
-          
+
           {response.confidence && (
-            <ConfidenceIndicator 
+            <ConfidenceIndicator
               score={response.confidence.score}
               label={response.confidence.label}
               reasons={response.confidence.reasons}
@@ -95,113 +118,95 @@ const ResultsPanel = ({ response, loading }) => {
           )}
         </div>
 
-        {/* Show chart if data exists */}
-        {response.data && response.data.length > 0 && (
-          <div className="results-chart">
-            <ChartView 
-              data={chartData} 
-              chartType={response.chartSuggestion?.type || 'bar'}
-            />
-          </div>
+        {/* Chart */}
+        {response.data?.length > 0 && (
+          <ChartView
+            data={chartData}
+            chartType={response.chartSuggestion?.type || "bar"}
+          />
         )}
 
-        {/* Show table */}
-        {response.data && response.data.length > 0 && (
-          <div className="results-table">
-            <TableView data={response.data} />
-          </div>
-        )}
+        {/* Table */}
+        {response.data?.length > 0 && <TableView data={response.data} />}
 
-        {/* Show explainability panel */}
-        <div className="results-explainability">
-          <ExplainabilityPanel 
+        {/* Explainability */}
+        {response.explainability && (
+          <ExplainabilityPanel
             explainability={response.explainability}
             sql={response.sql}
           />
-        </div>
-      </div>
+        )}
+      </PanelWrapper>
     );
   }
 
-  // Default: unknown state
+  /* ---------- Fallback ---------- */
   return (
-    <div className="results-panel results-unknown">
-      <p>Unknown response status</p>
+    <div className="w-full rounded-[20px] border border-white/10 bg-slate-800/70 p-8 text-slate-300">
+      Unknown response status
     </div>
   );
 };
 
-/**
- * Transform backend data for ChartView
- * Expected format: [{ label: string, value: number }]
- */
+/* ----------------------- */
+/* Chart Data Transformer */
+/* ----------------------- */
 const transformDataForChart = (data, chartSuggestion) => {
-  if (!data || !Array.isArray(data) || data.length === 0) {
-    return [];
-  }
+  if (!Array.isArray(data) || data.length === 0) return [];
 
-  // If data is already in correct format
-  if (data[0] && data[0].label !== undefined && data[0].value !== undefined) {
+  if (data[0]?.label !== undefined && data[0]?.value !== undefined) {
     return data;
   }
 
-  // Get suggested x and y from chartSuggestion if available
   const suggestedX = chartSuggestion?.x;
   const suggestedY = chartSuggestion?.y;
 
-  // Transform from backend format
   return data.map((row, index) => {
     const keys = Object.keys(row);
-    
-    // Use suggested columns if available
-    const labelKey = suggestedX && row[suggestedX] !== undefined ? suggestedX : (keys[0] || `Item ${index + 1}`);
-    const valueKey = suggestedY && row[suggestedY] !== undefined ? suggestedY : (keys[1] || 'value');
-    
+
+    const labelKey =
+      suggestedX && row[suggestedX] !== undefined ? suggestedX : keys[0];
+
+    const valueKey =
+      suggestedY && row[suggestedY] !== undefined ? suggestedY : keys[1];
+
     return {
-      label: String(row[labelKey] || `Item ${index + 1}`),
-      value: typeof row[valueKey] === 'number' ? row[valueKey] : 0
+      label: String(row[labelKey] ?? `Item ${index + 1}`),
+      value: typeof row[valueKey] === "number" ? row[valueKey] : 0,
     };
   });
 };
 
+/* ----------------------- */
+/* Prop Types */
+/* ----------------------- */
 ResultsPanel.propTypes = {
   response: PropTypes.shape({
-    status: PropTypes.oneOf(['clarification_required', 'success', 'rejected', 'error']),
+    status: PropTypes.oneOf([
+      "clarification_required",
+      "success",
+      "rejected",
+      "error",
+    ]),
     sessionId: PropTypes.string,
     sql: PropTypes.string,
     data: PropTypes.array,
     chartSuggestion: PropTypes.shape({
       type: PropTypes.string,
       x: PropTypes.string,
-      y: PropTypes.string
+      y: PropTypes.string,
     }),
-    explainability: PropTypes.shape({
-      tables: PropTypes.arrayOf(PropTypes.string),
-      columns: PropTypes.arrayOf(PropTypes.string),
-      joins: PropTypes.arrayOf(PropTypes.string),
-      filters: PropTypes.arrayOf(PropTypes.string),
-      businessRulesUsed: PropTypes.arrayOf(PropTypes.string)
-    }),
-    verification: PropTypes.shape({
-      status: PropTypes.string,
-      message: PropTypes.string
-    }),
-    confidence: PropTypes.shape({
-      score: PropTypes.number,
-      label: PropTypes.string,
-      reasons: PropTypes.arrayOf(PropTypes.string)
-    }),
-    error: PropTypes.shape({
-      code: PropTypes.string,
-      message: PropTypes.string
-    })
+    explainability: PropTypes.object,
+    verification: PropTypes.object,
+    confidence: PropTypes.object,
+    error: PropTypes.object,
   }),
-  loading: PropTypes.bool
+  loading: PropTypes.bool,
 };
 
 ResultsPanel.defaultProps = {
   response: null,
-  loading: false
+  loading: false,
 };
 
 export default ResultsPanel;

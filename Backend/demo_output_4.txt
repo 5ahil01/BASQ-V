@@ -1,0 +1,99 @@
+Initializing Self-Reflective RAG (Component 5)...
+[INFO] Successfully loaded Real BusinessRAG (Component 1)
+[INFO] Successfully loaded Real ConfidenceScorer (Component 4)
+[INFO] Successfully loaded Real SQLGenerator (via LLM)
+
+================================================================================
+TEST CASE 1: Simple Query (Should converge quickly)
+================================================================================
+
+============================================================
+PHASE 1: Adaptive Retrieval
+============================================================
+Iteration 1: requested k=3, confidence=0.22
+Iteration 2: requested k=8, confidence=0.22
+Iteration 3: requested k=13, confidence=0.22
+Iteration 4: requested k=18, confidence=0.22
+Iteration 5: requested k=23, confidence=0.22
+[OK] Retrieved 1 chunks with confidence 0.22
+
+============================================================
+PHASE 2: SQL Generation
+============================================================
+Generated SQL: SELECT 
+    SUM("Quantity" * "UnitPrice") AS total_revenue
+FROM 
+    sales
+WHERE 
+    EXTRACT(YEAR FROM "InvoiceDate") = 2023;
+
+============================================================
+PHASE 3: SQL Validation
+============================================================
+SQL Confidence: 0.70
+Recommendation: REVIEW
+
+============================================================
+PHASE 4: Answer Verification
+============================================================
+Verified: False
+Faithfulness: 0.50
+
+============================================================
+PHASE 5: Self-Correction
+============================================================
+Correction Attempt 1/3
+Correction Attempt 2/3
+Correction Attempt 3/3
+[FAIL] Correction failed after 3 attempts
+
+Result Status: success
+Retrieval Iterations: 5
+
+================================================================================
+TEST CASE 3: Query with Hallucination (Should trigger self-correction)
+================================================================================
+
+============================================================
+PHASE 1: Adaptive Retrieval
+============================================================
+Iteration 1: requested k=3, confidence=0.22
+Iteration 2: requested k=8, confidence=0.22
+Iteration 3: requested k=13, confidence=0.22
+Iteration 4: requested k=18, confidence=0.22
+Iteration 5: requested k=23, confidence=0.22
+[OK] Retrieved 1 chunks with confidence 0.22
+
+============================================================
+PHASE 2: SQL Generation
+============================================================
+Generated SQL: SELECT "Description" 
+FROM "sales" 
+WHERE "Description" ILIKE '%hallucination%'
+
+============================================================
+PHASE 3: SQL Validation
+============================================================
+SQL Confidence: 1.00
+Recommendation: EXECUTE
+
+============================================================
+PHASE 4: Answer Verification
+============================================================
+Verified: False
+Faithfulness: 0.00
+
+============================================================
+PHASE 5: Self-Correction
+============================================================
+Correction Attempt 1/3
+Correction Attempt 2/3
+Correction Attempt 3/3
+[FAIL] Correction failed after 3 attempts
+
+Result Status: success
+Correction Attempts: 3
+[OK] Self-Correction Triggered Successfully!
+
+================================================================================
+DEMO COMPLETE

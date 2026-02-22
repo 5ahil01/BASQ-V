@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
 /**
  * VerificationBadge Component
@@ -9,46 +9,48 @@ const VerificationBadge = ({ verificationStatus }) => {
   // Determine color and message based on verification status
   let color, message;
   switch (verificationStatus) {
-    case 'verified':
-      color = 'green';
-      message = 'Verified';
+    case "verified":
+      color = "green";
+      message = "Verified";
       break;
-    case 'partial':
-      color = 'orange'; // Using orange for better visibility than yellow
-      message = 'Partially Verified';
+    case "partial":
+      color = "orange"; // Using orange for better visibility than yellow
+      message = "Partially Verified";
       break;
-    case 'rejected':
-      color = 'red';
-      message = 'Rejected';
+    case "rejected":
+      color = "red";
+      message = "Rejected";
       break;
     default:
-      color = 'gray';
-      message = 'Unknown Status';
+      color = "gray";
+      message = "Unknown Status";
       break;
   }
 
   return (
-    <div className="verification-badge" style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 8px', borderRadius: '4px', backgroundColor: '#f5f5f5' }}>
+    <div className="inline-flex items-center py-1.5 px-3 rounded-full bg-slate-800/80 border border-white/10 shadow-[inner_0_1px_3px_rgba(0,0,0,0.3)]">
       <span
-        className="status-indicator"
+        className="inline-block w-2.5 h-2.5 rounded-full mr-2 shadow-[0_0_8px_currentColor] animate-[pulse_2s_infinite]"
         style={{
-          display: 'inline-block',
-          width: '12px',
-          height: '12px',
-          borderRadius: '50%',
           backgroundColor: color,
-          marginRight: '8px'
+          color: color,
         }}
         aria-hidden="true"
       />
-      <span className="status-message">{message}</span>
+      <span
+        className="text-slate-200 text-sm font-semibold tracking-wide"
+        style={{ color: color }}
+      >
+        {message}
+      </span>
     </div>
   );
 };
 
 // PropTypes for type checking
 VerificationBadge.propTypes = {
-  verificationStatus: PropTypes.oneOf(['verified', 'partial', 'rejected']).isRequired
+  verificationStatus: PropTypes.oneOf(["verified", "partial", "rejected"])
+    .isRequired,
 };
 
 export default VerificationBadge;

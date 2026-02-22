@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
 /**
  * ChartView Component
@@ -10,7 +10,8 @@ const ChartView = ({ data, chartType }) => {
   const isValidData = () => {
     if (!data) return false;
     if (Array.isArray(data) && data.length === 0) return false;
-    if (typeof data === 'object' && Object.keys(data).length === 0) return false;
+    if (typeof data === "object" && Object.keys(data).length === 0)
+      return false;
     return true;
   };
 
@@ -27,19 +28,19 @@ const ChartView = ({ data, chartType }) => {
   const renderChart = () => {
     try {
       switch (chartType?.toLowerCase()) {
-        case 'bar':
+        case "bar":
           return renderBarChart();
 
-        case 'line':
+        case "line":
           return renderLineChart();
 
-        case 'pie':
+        case "pie":
           return renderPieChart();
 
-        case 'kpi':
+        case "kpi":
           return renderKPI();
 
-        case 'table':
+        case "table":
           return renderTableView();
 
         default:
@@ -48,7 +49,7 @@ const ChartView = ({ data, chartType }) => {
       }
     } catch (error) {
       // Never crash UI - catch any rendering errors
-      console.error('Error rendering chart:', error);
+      console.error("Error rendering chart:", error);
       return (
         <div className="chart-view-error">
           <p>Unable to render chart. Please try a different view.</p>
@@ -60,25 +61,29 @@ const ChartView = ({ data, chartType }) => {
   // Bar Chart Implementation
   const renderBarChart = () => {
     return (
-      <div className="chart-container bar-chart">
-        <h3>Bar Chart</h3>
-        <div className="chart-content">
-          {Array.isArray(data) && data.map((item, index) => (
-            <div key={index} className="bar-item">
-              <div className="bar-label">{item.label || item.name || `Item ${index + 1}`}</div>
-              <div className="bar-wrapper">
-                <div 
-                  className="bar" 
-                  style={{ 
-                    width: `${Math.min(100, (item.value / getMaxValue()) * 100)}%`,
-                    backgroundColor: '#4CAF50'
-                  }}
-                >
-                  <span className="bar-value">{item.value}</span>
+      <div className="w-full">
+        <h3 className="text-lg text-slate-300 mb-5 font-semibold">Bar Chart</h3>
+        <div className="flex flex-col gap-4 w-full">
+          {Array.isArray(data) &&
+            data.map((item, index) => (
+              <div key={index} className="flex items-center gap-4 w-full">
+                <div className="w-[120px] text-slate-400 text-sm text-right shrink-0 whitespace-nowrap overflow-hidden text-ellipsis">
+                  {item.label || item.name || `Item ${index + 1}`}
+                </div>
+                <div className="flex-1 bg-white/5 h-8 rounded-md overflow-hidden relative">
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-md flex items-center px-3 min-w-[40px] transition-all duration-[1s] ease-out shadow-[0_0_15px_rgba(96,165,250,0.3)]"
+                    style={{
+                      width: `${Math.min(100, (item.value / getMaxValue()) * 100)}%`,
+                    }}
+                  >
+                    <span className="text-white font-semibold text-[0.85rem] drop-shadow-md">
+                      {item.value}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
     );
@@ -92,18 +97,34 @@ const ChartView = ({ data, chartType }) => {
         <div className="chart-content">
           <svg width="100%" height="300" viewBox="0 0 500 300">
             {/* Background grid */}
-            <line x1="50" y1="250" x2="450" y2="250" stroke="#ddd" strokeWidth="2" />
-            <line x1="50" y1="50" x2="50" y2="250" stroke="#ddd" strokeWidth="2" />
-            
+            <line
+              x1="50"
+              y1="250"
+              x2="450"
+              y2="250"
+              stroke="#ddd"
+              strokeWidth="2"
+            />
+            <line
+              x1="50"
+              y1="50"
+              x2="50"
+              y2="250"
+              stroke="#ddd"
+              strokeWidth="2"
+            />
+
             {/* Plot data points */}
             {Array.isArray(data) && renderLinePoints()}
           </svg>
           <div className="chart-legend">
-            {Array.isArray(data) && data.map((item, index) => (
-              <div key={index} className="legend-item">
-                {item.label || item.name || `Point ${index + 1}`}: {item.value}
-              </div>
-            ))}
+            {Array.isArray(data) &&
+              data.map((item, index) => (
+                <div key={index} className="legend-item">
+                  {item.label || item.name || `Point ${index + 1}`}:{" "}
+                  {item.value}
+                </div>
+              ))}
           </div>
         </div>
       </div>
@@ -113,11 +134,11 @@ const ChartView = ({ data, chartType }) => {
   // Helper to render line chart points
   const renderLinePoints = () => {
     if (!Array.isArray(data) || data.length === 0) return null;
-    
+
     const maxValue = getMaxValue();
     const points = data.map((item, index) => {
-      const x = 50 + (index * (400 / (data.length - 1 || 1)));
-      const y = 250 - ((item.value / maxValue) * 200);
+      const x = 50 + index * (400 / (data.length - 1 || 1));
+      const y = 250 - (item.value / maxValue) * 200;
       return { x, y, value: item.value };
     });
 
@@ -125,20 +146,14 @@ const ChartView = ({ data, chartType }) => {
       <>
         {/* Line path */}
         <polyline
-          points={points.map(p => `${p.x},${p.y}`).join(' ')}
+          points={points.map((p) => `${p.x},${p.y}`).join(" ")}
           fill="none"
           stroke="#2196F3"
           strokeWidth="2"
         />
         {/* Data points */}
         {points.map((point, index) => (
-          <circle
-            key={index}
-            cx={point.x}
-            cy={point.y}
-            r="4"
-            fill="#2196F3"
-          />
+          <circle key={index} cx={point.x} cy={point.y} r="4" fill="#2196F3" />
         ))}
       </>
     );
@@ -151,20 +166,25 @@ const ChartView = ({ data, chartType }) => {
         <h3>Pie Chart</h3>
         <div className="chart-content">
           <div className="pie-items">
-            {Array.isArray(data) && data.map((item, index) => {
-              const percentage = ((item.value / getTotalValue()) * 100).toFixed(1);
-              return (
-                <div key={index} className="pie-item">
-                  <div
-                    className="pie-color"
-                    style={{ backgroundColor: getColor(index) }}
-                  ></div>
-                  <span className="pie-label">
-                    {item.label || item.name || `Item ${index + 1}`}: {item.value} ({percentage}%)
-                  </span>
-                </div>
-              );
-            })}
+            {Array.isArray(data) &&
+              data.map((item, index) => {
+                const percentage = (
+                  (item.value / getTotalValue()) *
+                  100
+                ).toFixed(1);
+                return (
+                  <div key={index} className="pie-item">
+                    <div
+                      className="pie-color"
+                      style={{ backgroundColor: getColor(index) }}
+                    ></div>
+                    <span className="pie-label">
+                      {item.label || item.name || `Item ${index + 1}`}:{" "}
+                      {item.value} ({percentage}%)
+                    </span>
+                  </div>
+                );
+              })}
           </div>
         </div>
       </div>
@@ -206,12 +226,13 @@ const ChartView = ({ data, chartType }) => {
             </tr>
           </thead>
           <tbody>
-            {Array.isArray(data) && data.map((item, index) => (
-              <tr key={index}>
-                <td>{item.label || item.name || `Item ${index + 1}`}</td>
-                <td>{item.value}</td>
-              </tr>
-            ))}
+            {Array.isArray(data) &&
+              data.map((item, index) => (
+                <tr key={index}>
+                  <td>{item.label || item.name || `Item ${index + 1}`}</td>
+                  <td>{item.value}</td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
@@ -221,8 +242,8 @@ const ChartView = ({ data, chartType }) => {
   // Fallback view for unsupported chart types
   const renderFallbackView = () => {
     return (
-      <div className="chart-container fallback-view">
-        <div className="fallback-message">
+      <div className="w-full">
+        <div className="mb-4 text-slate-300 italic text-center">
           <p>Chart type "{chartType}" is not supported.</p>
           <p>Displaying data in table format:</p>
         </div>
@@ -234,7 +255,7 @@ const ChartView = ({ data, chartType }) => {
   // Helper function to get max value from data
   const getMaxValue = () => {
     if (!Array.isArray(data)) return 1;
-    return Math.max(...data.map(item => item.value || 0), 1);
+    return Math.max(...data.map((item) => item.value || 0), 1);
   };
 
   // Helper function to get total value for percentage calculations
@@ -245,12 +266,19 @@ const ChartView = ({ data, chartType }) => {
 
   // Helper function to get colors for pie chart
   const getColor = (index) => {
-    const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+    const colors = [
+      "#FF6384",
+      "#36A2EB",
+      "#FFCE56",
+      "#4BC0C0",
+      "#9966FF",
+      "#FF9F40",
+    ];
     return colors[index % colors.length];
   };
 
   return (
-    <div className="chart-view">
+    <div className="w-full min-h-[350px] bg-slate-900/40 rounded-2xl p-6 border border-white/5">
       {renderChart()}
     </div>
   );
@@ -258,17 +286,14 @@ const ChartView = ({ data, chartType }) => {
 
 // PropTypes for type checking
 ChartView.propTypes = {
-  data: PropTypes.oneOfType([
-    PropTypes.array,
-    PropTypes.object
-  ]),
-  chartType: PropTypes.string
+  data: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
+  chartType: PropTypes.string,
 };
 
 // Default props
 ChartView.defaultProps = {
   data: null,
-  chartType: 'bar'
+  chartType: "bar",
 };
 
 export default ChartView;

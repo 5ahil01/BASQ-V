@@ -1,0 +1,126 @@
+Warning: Could not import existing components directly. Error: No module named 'langchain_qdrant'
+Using mocks or relative imports if available.
+Initializing Self-Reflective RAG (Component 5)...
+[WARN] Failed to load Real BusinessRAG. Using Mock.
+[WARN] Failed to load Real ConfidenceScorer. Using Mock.
+[WARN] Failed to load Real SQLGenerator. Using Mock.
+
+================================================================================
+TEST CASE 1: Simple Query (Should converge quickly)
+================================================================================
+
+============================================================
+PHASE 1: Adaptive Retrieval
+============================================================
+  [MockRAG] Retrieving 3 chunks for: 'Show total revenue for 2023'
+Iteration 1: requested k=3, confidence=0.47
+  [MockRAG] Retrieving 5 chunks for: 'Show total revenue for 2023'
+Iteration 2: requested k=5, confidence=0.48
+  [MockRAG] Retrieving 7 chunks for: 'Show total revenue for 2023'
+Iteration 3: requested k=7, confidence=0.48
+  [MockRAG] Retrieving 9 chunks for: 'Show total revenue for 2023'
+Iteration 4: requested k=9, confidence=0.48
+  [MockRAG] Retrieving 11 chunks for: 'Show total revenue for 2023'
+Iteration 5: requested k=11, confidence=0.48
+[OK] Retrieved 5 chunks with confidence 0.48
+
+============================================================
+PHASE 2: SQL Generation
+============================================================
+  [MockGen] Generating SQL...
+Generated SQL: SELECT SUM(revenue) FROM financial_data WHERE year = 2023
+
+============================================================
+PHASE 3: SQL Validation
+============================================================
+  [MockScorer] Scoring SQL: SELECT SUM(revenue) FROM financial_data WHERE year = 2023
+SQL Confidence: 0.95
+Recommendation: EXECUTE
+
+============================================================
+PHASE 4: Answer Verification
+============================================================
+Verified: False
+Faithfulness: 0.33
+
+============================================================
+PHASE 5: Self-Correction
+============================================================
+Correction Attempt 1/3
+  [MockRAG] Retrieving 1 chunks for: 'What is the correct table for FINANCIAL_DATA?'
+  [MockRAG] Retrieving 1 chunks for: 'What is the correct column for YEAR?'
+  [MockGen] Generating SQL...
+Correction Attempt 2/3
+  [MockRAG] Retrieving 1 chunks for: 'What is the correct table for FINANCIAL_DATA?'
+  [MockRAG] Retrieving 1 chunks for: 'What is the correct column for YEAR?'
+  [MockGen] Generating SQL...
+Correction Attempt 3/3
+  [MockRAG] Retrieving 1 chunks for: 'What is the correct table for FINANCIAL_DATA?'
+  [MockRAG] Retrieving 1 chunks for: 'What is the correct column for YEAR?'
+  [MockGen] Generating SQL...
+[FAIL] Correction failed after 3 attempts
+
+Result Status: success
+Retrieval Iterations: 5
+
+================================================================================
+TEST CASE 3: Query with Hallucination (Should trigger self-correction)
+================================================================================
+
+============================================================
+PHASE 1: Adaptive Retrieval
+============================================================
+  [MockRAG] Retrieving 3 chunks for: 'Show me the hallucination test'
+Iteration 1: requested k=3, confidence=0.10
+  [MockRAG] Retrieving 8 chunks for: 'Show me the hallucination test'
+Iteration 2: requested k=8, confidence=0.10
+  [MockRAG] Retrieving 13 chunks for: 'Show me the hallucination test'
+Iteration 3: requested k=13, confidence=0.10
+  [MockRAG] Retrieving 18 chunks for: 'Show me the hallucination test'
+Iteration 4: requested k=18, confidence=0.10
+  [MockRAG] Retrieving 23 chunks for: 'Show me the hallucination test'
+Iteration 5: requested k=23, confidence=0.10
+[OK] Retrieved 2 chunks with confidence 0.10
+
+============================================================
+PHASE 2: SQL Generation
+============================================================
+  [MockGen] Generating SQL...
+Generated SQL: SELECT hallucinated_column FROM products
+
+============================================================
+PHASE 3: SQL Validation
+============================================================
+  [MockScorer] Scoring SQL: SELECT hallucinated_column FROM products
+SQL Confidence: 0.20
+Recommendation: REJECT
+
+============================================================
+PHASE 4: Answer Verification
+============================================================
+Verified: False
+Faithfulness: 0.00
+
+============================================================
+PHASE 5: Self-Correction
+============================================================
+Correction Attempt 1/3
+  [MockRAG] Retrieving 1 chunks for: 'What is the correct table for PRODUCTS?'
+  [MockRAG] Retrieving 1 chunks for: 'What is the correct column for HALLUCINATED_COLUMN?'
+  [MockGen] Generating SQL...
+Correction Attempt 2/3
+  [MockRAG] Retrieving 1 chunks for: 'What is the correct table for PRODUCTS?'
+  [MockRAG] Retrieving 1 chunks for: 'What is the correct column for HALLUCINATED_COLUMN?'
+  [MockGen] Generating SQL...
+Correction Attempt 3/3
+  [MockRAG] Retrieving 1 chunks for: 'What is the correct table for PRODUCTS?'
+  [MockRAG] Retrieving 1 chunks for: 'What is the correct column for HALLUCINATED_COLUMN?'
+  [MockGen] Generating SQL...
+[FAIL] Correction failed after 3 attempts
+
+Result Status: low_confidence
+Correction Attempts: 3
+[OK] Self-Correction Triggered Successfully!
+
+================================================================================
+DEMO COMPLETE

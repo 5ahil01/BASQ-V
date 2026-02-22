@@ -113,6 +113,9 @@ class SQLConfidenceScorer:
         if context_score < 0.5 and context:
              issues.append({'type': 'context_ignored', 'severity': 'medium', 'details': "Low alignment with business context."})
 
+        print(f"DEBUG SCORES: Schema={schema_score}, Syntax={syntax_score}, Semantic={semantic_score}, Context={context_score}, Business={business_logic_score}")
+        print(f"DEBUG OVERALL: {overall_confidence}")
+
         return {
             'overall_confidence': overall_confidence,
             'dimension_scores': {

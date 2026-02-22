@@ -21,6 +21,7 @@ class SelfReflectiveRAG:
         self.retrieval_assessor = RetrievalQualityAssessor()
         self.adaptive_retriever = AdaptiveRetriever(self.business_rag, self.retrieval_assessor)
         self.answer_verifier = AnswerVerifier()
+        
         self.self_corrector = SelfCorrector(
             self.adaptive_retriever,
             self.sql_generator,

@@ -44,9 +44,26 @@ def main():
     print("Initializing Self-Reflective RAG (Component 5)...")
     
     # improved loading logic
-    business_rag = load_component1() or MockBusinessRAG()
-    confidence_scorer = load_component4() or MockConfidenceScorer()
-    sql_generator = create_sql_generator() or MockSQLGenerator()
+    business_rag = load_component1()
+    if business_rag:
+        print("[INFO] Successfully loaded Real BusinessRAG (Component 1)")
+    else:
+        print("[WARN] Failed to load Real BusinessRAG. Using Mock.")
+        business_rag = MockBusinessRAG()
+
+    confidence_scorer = load_component4()
+    if confidence_scorer:
+        print("[INFO] Successfully loaded Real ConfidenceScorer (Component 4)")
+    else:
+        print("[WARN] Failed to load Real ConfidenceScorer. Using Mock.")
+        confidence_scorer = MockConfidenceScorer()
+
+    sql_generator = create_sql_generator()
+    if sql_generator:
+        print("[INFO] Successfully loaded Real SQLGenerator (via LLM)")
+    else:
+        print("[WARN] Failed to load Real SQLGenerator. Using Mock.")
+        sql_generator = MockSQLGenerator()
     
     rag_system = SelfReflectiveRAG(business_rag, confidence_scorer, sql_generator)
     

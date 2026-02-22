@@ -110,11 +110,31 @@ class AnswerVerifier:
         Check if element is mentioned in any chunk.
         Case-insensitive substring match.
         """
+        if self.is_system_element(element):
+            return True
+            
         element_lower = element.lower()
         for chunk in chunks:
             if element_lower in chunk.lower():
                 return True
         return False
+
+    def is_system_element(self, element: str) -> bool:
+        """
+        Check if element is a known system table or column.
+        """
+        system_tables = {
+            'pg_catalog', 'pg_tables', 'pg_class', 'pg_namespace', 
+            'pg_attribute', 'pg_index', 'pg_proc', 'pg_type',
+            'information_schema', 'columns', 'tables', 'schemata'
+        }
+        system_columns = {
+            'tablename', 'schemaname', 'tableowner', 'tablespace',
+            'hasindexes', 'hasrules', 'hastriggers', 'rowsecurity',
+            'table_name', 'column_name', 'data_type', 'is_nullable'
+        }
+        
+        return element.lower() in system_tables or element.lower() in system_columns
     
     def calculate_faithfulness(self, elements: Dict, unsupported: List[str]) -> float:
         """

@@ -18,7 +18,20 @@ class SchemaValidator:
             schema: Dictionary mapping table names to list of column names.
                    Example: {'users': ['id', 'name', 'email'], 'orders': ['id', 'user_id', 'amount']}
         """
+        self.SYSTEM_SCHEMA = {
+            'pg_tables': ['schemaname', 'tablename', 'tableowner', 'tablespace', 'hasindexes', 'hasrules', 'hastriggers', 'rowsecurity'],
+            'pg_catalog.pg_tables': ['schemaname', 'tablename', 'tableowner', 'tablespace', 'hasindexes', 'hasrules', 'hastriggers', 'rowsecurity'],
+            'pg_class': ['relname', 'relnamespace', 'reltype', 'relowner', 'relam', 'relfilenode', 'reltablespace', 'relpages', 'reltuples', 'relallvisible', 'reltoastrelid', 'relhasindex', 'relisshared', 'relpersistence', 'relkind', 'relnatts', 'relchecks', 'relhasrules', 'relhastriggers', 'relhassubclass', 'relrowsecurity', 'relforcerowsecurity', 'relispopulated', 'relreplident', 'relispartition', 'relfrozenxid', 'relminmxid', 'relacl', 'reloptions', 'relpartbound'],
+            'pg_namespace': ['nspname', 'nspowner', 'nspacl'],
+            'pg_attribute': ['attrelid', 'attname', 'atttypid', 'attstattarget', 'attlen', 'attnum', 'attndims', 'attcacheoff', 'atttypmod', 'attbyval', 'attstorage', 'attalign', 'attnotnull', 'atthasdef', 'attidentity', 'attgenerated', 'attisdropped', 'attislocal', 'attinhcount', 'attcollation', 'attacl', 'attoptions', 'attfdwoptions', 'attmissingval'],
+            'information_schema.tables': ['table_catalog', 'table_schema', 'table_name', 'table_type', 'self_referencing_column_name', 'reference_generation', 'user_defined_type_catalog', 'user_defined_type_schema', 'user_defined_type_name', 'is_insertable_into', 'is_typed', 'commit_action'],
+            'information_schema.columns': ['table_catalog', 'table_schema', 'table_name', 'column_name', 'ordinal_position', 'column_default', 'is_nullable', 'data_type', 'character_maximum_length', 'character_octet_length', 'numeric_precision', 'numeric_precision_radix', 'numeric_scale', 'datetime_precision', 'interval_type', 'interval_precision', 'character_set_catalog', 'character_set_schema', 'character_set_name', 'collation_catalog', 'collation_schema', 'collation_name', 'domain_catalog', 'domain_schema', 'domain_name', 'udt_catalog', 'udt_schema', 'udt_name', 'scope_catalog', 'scope_schema', 'scope_name', 'maximum_cardinality', 'dtd_identifier', 'is_self_referencing', 'is_identity', 'identity_generation', 'identity_start', 'identity_increment', 'identity_maximum', 'identity_minimum', 'identity_cycle', 'is_generated', 'generation_expression', 'is_updatable']
+        }
+        
+        # Merge provided schema with system schema
         self.schema = {k.lower(): [c.lower() for c in v] for k, v in schema.items()}
+        for k, v in self.SYSTEM_SCHEMA.items():
+            self.schema[k.lower()] = [c.lower() for c in v]
 
     def validate(self, sql: str) -> Tuple[bool, List[str]]:
         """
