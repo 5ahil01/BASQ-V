@@ -7,6 +7,7 @@ from .services.rag_service import RagService
 from .services.sql_service import SqlService
 from .self_reflective_rag.self_reflective_rag import SelfReflectiveRAG
 from .self_reflective_rag.integration_helpers import load_component1, load_component4, create_sql_generator
+from .services.chart_selector import ChartSelector
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -25,6 +26,7 @@ app.add_middleware(
 # 1. Basic Services
 rag_service = RagService()
 sql_service = SqlService()
+chart_selector = ChartSelector()
 
 # 2. Self-Reflective Components
 # using helpers to wrap existing services where possible
@@ -62,17 +64,27 @@ def query_database(request: schemas.QueryRequest):
         else:
              results = []
         
+        # 3. Select Chart
+        confidence = reflection_result.get('sql_confidence', 0.5)
+        # Using recommendation or hints if available (for future extensions)
+        chart_result = chart_selector.select_chart(generated_sql or "", results, confidence=confidence)
+        chart_suggestion = {
+            "type": chart_result.chart_type.value,
+            "metadata": chart_result.metadata.dict()
+        }
+
         return schemas.QueryResponse(
             query=request.query,
             sql_query=generated_sql,
             result=results,
-            sql_confidence=reflection_result.get('sql_confidence'),
+            sql_confidence=confidence,
             retrieval_confidence=reflection_result.get('retrieval_confidence'),
             status=reflection_result.get('status'),
             correction_attempts=reflection_result.get('correction_attempts'),
             total_time_ms=reflection_result.get('total_time_ms'),
             self_reflection_log=reflection_result.get('self_reflection_log'),
-            recommendation=reflection_result.get('recommendation')
+            recommendation=reflection_result.get('recommendation'),
+            chart_suggestion=chart_suggestion
         )
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))

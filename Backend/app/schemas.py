@@ -15,3 +15,4 @@ class QueryResponse(BaseModel):
     total_time_ms: Optional[float] = None
     self_reflection_log: Optional[List[Dict[str, Any]]] = None
     recommendation: Optional[str] = None
+    chart_suggestion: Optional[Dict[str, Any]] = None
