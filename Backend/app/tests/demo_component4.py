@@ -1,6 +1,6 @@
 import json
-from confidence_scorer import SQLConfidenceScorer
-from self_corrector import SQLSelfCorrector
+from app.hallucination_detection.confidence_scorer import SQLConfidenceScorer
+from app.hallucination_detection.self_corrector import SQLSelfCorrector
 
 def print_result(title, result):
     print(f"\n{'='*50}")

@@ -1,11 +1,11 @@
 import pytest
-from schema_validator import SchemaValidator
-from syntax_checker import SyntaxChecker
-from semantic_validator import SemanticValidator
-from context_checker import ContextChecker
-from confidence_scorer import SQLConfidenceScorer
-from self_corrector import SQLSelfCorrector
-from hallucination_detector import HallucinationDetector
+from app.hallucination_detection.schema_validator import SchemaValidator
+from app.hallucination_detection.syntax_checker import SyntaxChecker
+from app.hallucination_detection.semantic_validator import SemanticValidator
+from app.hallucination_detection.context_checker import ContextChecker
+from app.hallucination_detection.confidence_scorer import SQLConfidenceScorer
+from app.hallucination_detection.self_corrector import SQLSelfCorrector
+from app.hallucination_detection.hallucination_detector import HallucinationDetector
 
 # Mock Schema
 SAMPLE_SCHEMA = {
