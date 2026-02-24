@@ -43,6 +43,14 @@ class RagService:
         sql_query = chain.invoke(query)
         
         # Cleanup: sometimes LLMs still output markdown
-        cleaned_sql = sql_query.replace("```sql", "").replace("```", "").strip()
+        cleaned_sql = sql_query.replace("```json", "").replace("```sql", "").replace("```", "").strip()
         
+        import json
+        try:
+            parsed = json.loads(cleaned_sql)
+            if "sql" in parsed:
+                return parsed["sql"]
+        except json.JSONDecodeError:
+            pass
+            
         return cleaned_sql

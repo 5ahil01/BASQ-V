@@ -29,12 +29,15 @@ const ChartView = ({ data, chartType }) => {
     try {
       switch (chartType?.toLowerCase()) {
         case "bar":
+        case "horizontalbar":
           return renderBarChart();
 
         case "line":
+        case "area":
           return renderLineChart();
 
         case "pie":
+        case "doughnut":
           return renderPieChart();
 
         case "kpi":

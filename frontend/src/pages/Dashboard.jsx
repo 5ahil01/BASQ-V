@@ -42,8 +42,8 @@ const Dashboard = () => {
 
       try {
         // Call API with query and sessionId if available
-        // const apiResponse = await sendQuery(query, sessionId);
-        const apiResponse = dummyQueryResponse;
+        const apiResponse = await sendQuery(query, sessionId);
+        //const apiResponse = dummyQueryResponse;
 
         // Normalize the response using responseMapper
         const normalizedResponse = normalizeResponse(apiResponse);
@@ -72,20 +72,20 @@ const Dashboard = () => {
         } else {
           // Unknown status - treat as error
           setError(
-            "Received an unknown response from the server. Please try again.",
+            "Received an unknown response from the server. Please try again."
           );
         }
       } catch (err) {
         // Handle API errors
         setError(
-          err.message || "An error occurred while processing your query",
+          err.message || "An error occurred while processing your query"
         );
         console.error("Query error:", err);
       } finally {
         setLoading(false);
       }
     },
-    [sessionId],
+    [sessionId]
   );
 
   /**
@@ -102,7 +102,7 @@ const Dashboard = () => {
         // Send clarification answer to backend
         const apiResponse = await sendClarification(
           answer,
-          clarificationSessionId,
+          clarificationSessionId
         );
 
         // Normalize the response
@@ -130,19 +130,19 @@ const Dashboard = () => {
           });
         } else {
           setError(
-            "Received an unknown response after clarification. Please try again.",
+            "Received an unknown response after clarification. Please try again."
           );
         }
       } catch (err) {
         setError(
-          err.message || "An error occurred while submitting your answer",
+          err.message || "An error occurred while submitting your answer"
         );
         console.error("Clarification error:", err);
       } finally {
         setLoading(false);
       }
     },
-    [],
+    []
   );
 
   /**
