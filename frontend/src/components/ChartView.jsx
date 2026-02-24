@@ -46,6 +46,9 @@ const ChartView = ({ data, chartType }) => {
         case "table":
           return renderTableView();
 
+        case "heatmap":
+          return renderHeatmapChart();
+
         default:
           // Fallback for unsupported chart type
           return renderFallbackView();
@@ -211,6 +214,51 @@ const ChartView = ({ data, chartType }) => {
         <div className="kpi-content">
           <div className="kpi-value">{value}</div>
           <div className="kpi-label">{label}</div>
+        </div>
+      </div>
+    );
+  };
+
+  // Heatmap Chart Implementation
+  const renderHeatmapChart = () => {
+    const maxValue = getMaxValue();
+    return (
+      <div className="w-full">
+        <h3 className="text-lg text-slate-300 mb-5 font-semibold">Heatmap</h3>
+        <div className="flex flex-wrap gap-3 w-full p-2">
+          {Array.isArray(data) &&
+            data.map((item, index) => {
+              const intensity = Math.min(
+                1,
+                Math.max(0.15, (item.value || 0) / (maxValue || 1)),
+              );
+              return (
+                <div
+                  key={index}
+                  className="flex flex-col items-center gap-2 group relative"
+                >
+                  <div
+                    className="w-20 h-20 rounded-md flex items-center justify-center transition-all duration-300 hover:scale-110 hover:z-10 cursor-pointer border border-white/10"
+                    style={{
+                      backgroundColor: `rgba(239, 68, 68, ${intensity})`,
+                      boxShadow: `0 0 15px rgba(239, 68, 68, ${intensity * 0.5})`,
+                    }}
+                    title={
+                      (item.label || item.name || "Item " + (index + 1)) +
+                      ": " +
+                      item.value
+                    }
+                  >
+                    <span className="text-white font-semibold text-sm drop-shadow-md">
+                      {item.value}
+                    </span>
+                  </div>
+                  <div className="text-slate-400 text-xs w-20 text-center overflow-hidden text-ellipsis whitespace-nowrap">
+                    {item.label || item.name || `Item ${index + 1}`}
+                  </div>
+                </div>
+              );
+            })}
         </div>
       </div>
     );
