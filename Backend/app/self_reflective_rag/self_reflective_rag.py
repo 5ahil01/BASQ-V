@@ -14,7 +14,7 @@ class SelfReflectiveRAG:
     
     def __init__(self, business_rag: Any, confidence_scorer: Any, sql_generator: Any):
         self.business_rag = business_rag          # Component 1
-        self.confidence_scorer = confidence_scorer # Component 4
+        self.confidence_scorer = confidence_scorer # Component 4 # hallucination detection component 
         self.sql_generator = sql_generator        # LLM SQL generator
         
         # Self-reflective components

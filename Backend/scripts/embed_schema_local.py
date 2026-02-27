@@ -4,35 +4,25 @@ from app.database import engine
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_qdrant import QdrantVectorStore
 from langchain_core.documents import Document
-from app.vector_db import get_qdrant_client
+from qdrant_client import QdrantClient
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
 def get_schema_documents():
-    """
-    Connects to the database, inspects the schema, and returns a list of LangChain Documents.
-    Each document represents a table's schema.
-    """
     inspector = inspect(engine)
     table_names = inspector.get_table_names()
-    
     documents = []
-    
     print(f"Found tables: {table_names}")
-    
     for table_name in table_names:
         columns = inspector.get_columns(table_name)
         pk_constraint = inspector.get_pk_constraint(table_name)
         foreign_keys = inspector.get_foreign_keys(table_name)
         
-        # Build a text representation of the table schema
-        schema_text = f"Table: {table_name}\n"
-        schema_text += "Columns:\n"
+        schema_text = f"Table: {table_name}\nColumns:\n"
         for col in columns:
             col_info = f"  - {col['name']} ({col['type']})"
-            if col.get('primary_key'): # Note: get_columns might not always return pk info directly depending on dialect, checking pk_constraint is safer usually but this is often usually populated
+            if col.get('primary_key'):
                 col_info += " [PK]"
             if col.get('nullable'):
                 col_info += " NULL"
@@ -48,19 +38,11 @@ def get_schema_documents():
             for fk in foreign_keys:
                 schema_text += f"  - {fk['constrained_columns']} -> {fk['referred_table']}.{fk['referred_columns']}\n"
         
-        # Create a document for this table
-        doc = Document(
-            page_content=schema_text,
-            metadata={"table_name": table_name, "type": "sql_schema"}
-        )
+        doc = Document(page_content=schema_text, metadata={"table_name": table_name, "type": "sql_schema"})
         documents.append(doc)
-        
     return documents
 
 def embed_and_store_schema():
-    """
-    Embeds the schema documents and stores them in Qdrant.
-    """
     try:
         documents = get_schema_documents()
         if not documents:
@@ -68,36 +50,28 @@ def embed_and_store_schema():
             return
 
         print(f"Prepared {len(documents)} documents for embedding.")
+        print("Loading Fake/Dummy embeddings model to isolate PyTorch freezing issues...")
+        from langchain_core.embeddings import FakeEmbeddings
+        embeddings = FakeEmbeddings(size=768)
         
-        # Initialize Embeddings
-        # Using a standard, high-quality local model
-        print("Loading HuggingFace embeddings model...")
-        embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
+        local_url = os.getenv("QDRANT_ENDPOINT_LOCAL") or "http://localhost:6333"
+        print(f"Connecting to Local Qdrant at {local_url}...")
         
-        # Initialize Qdrant Client
-        client = get_qdrant_client()
+        # Verify connection
+        client = QdrantClient(url=local_url, timeout=5)
+        client.get_collections()
         
         collection_name = "sql_schema"
-        
         print(f"Storing embeddings in Qdrant collection '{collection_name}'...")
         
-        # Get active Qdrant credentials dynamically
-        from app.vector_db import get_qdrant_credentials
-        qdrant_url, qdrant_api_key = get_qdrant_credentials()
-        
-        # Create Vector Store
-        # This will create the collection if it doesn't exist and add documents
         QdrantVectorStore.from_documents(
             documents=documents,
             embedding=embeddings,
-            url=qdrant_url,
-            api_key=qdrant_api_key,
+            url=local_url,
             collection_name=collection_name,
-            force_recreate=True # Optional: Set to True if you want to overwrite the schema collection each time
+            force_recreate=True
         )
-        
-        print("Schema successfully embedded and stored in Qdrant!")
-        
+        print("Schema successfully embedded and stored in LOCAL Qdrant!")
     except Exception as e:
         print(f"An error occurred: {e}")
 

@@ -1,0 +1,227 @@
+```mermaid
+classDiagram
+    class Item {
+        +id
+        +description
+        +title
+        +__tablename__
+    }
+    class QueryRequest {
+        +query: str
+    }
+    class QueryResponse {
+        +recommendation: Optional[str]
+        +query: str
+        +result: List[Dict[str, Any]]
+        +chart_suggestion: Optional[Dict[str, Any]]
+        +self_reflection_log: Optional[List[Dict[str, Any]]]
+        +correction_attempts: Optional[int]
+        +total_time_ms: Optional[float]
+        +sql_query: str
+        +status: Optional[str]
+        +sql_confidence: Optional[float]
+        +retrieval_confidence: Optional[float]
+    }
+    class AmbiguityDetector {
+        +__init__()
+        +detect()
+    }
+    class AmbiguityResolver {
+        +__init__()
+        +process_query()
+        +handle_user_response()
+    }
+    class ClarificationGenerator {
+        +generate()
+    }
+    class PreferenceLearner {
+        +__init__()
+        +_load_preferences()
+        +_save_preferences()
+        +learn()
+        +get_preference()
+        +get_confidence()
+        +should_ask_clarification()
+    }
+    class SQLConfidenceScorer {
+        +__init__()
+        +evaluate()
+    }
+    class ContextChecker {
+        +validate()
+    }
+    class HallucinationDetector {
+        +__init__()
+        +check_functions()
+        +analyze_schema_issues()
+        +detect_all()
+    }
+    class SchemaValidator {
+        +__init__()
+        +validate()
+        +_extract_tables()
+        +_extract_columns()
+    }
+    class SQLSelfCorrector {
+        +correct()
+    }
+    class SemanticValidator {
+        +validate()
+    }
+    class SyntaxChecker {
+        +check()
+    }
+    class AdaptiveRetriever {
+        +__init__()
+        +retrieve_adaptively()
+    }
+    class AnswerVerifier {
+        +verify()
+        +extract_sql_elements()
+        +check_context_support()
+        +is_system_element()
+        +calculate_faithfulness()
+    }
+    class BusinessRAGWrapper {
+        +__init__()
+        +retrieve_context()
+    }
+    class ConfidenceScorerWrapper {
+        +__init__()
+        +score()
+    }
+    class SQLGeneratorWrapper {
+        +__init__()
+        +generate()
+    }
+    class Component5Metrics {
+        +calculate_metrics()
+        +calculate_retrieval_efficiency()
+        +calculate_correction_stats()
+        +calculate_calibration()
+    }
+    class RetrievalQualityAssessor {
+        +assess()
+        +calculate_relevance()
+        +calculate_coverage()
+        +calculate_coherence()
+        +calculate_sufficiency()
+    }
+    class SelfCorrector {
+        +__init__()
+        +correct()
+    }
+    class SelfReflectiveRAG {
+        +__init__()
+        +query_with_reflection()
+    }
+    class ChartType {
+        +HEATMAP
+        +HORIZONTAL_BAR
+        +AREA
+        +TABLE
+        +SCATTER
+        +DOUGHNUT
+        +KPI
+        +BAR
+        +LINE
+        +PIE
+    }
+    class VisualizationMetadata {
+        +llm_hint_used: Optional[str]
+        +analysis: Dict[str, Any]
+        +reason: str
+    }
+    class VisualizationResult {
+        +metadata: VisualizationMetadata
+        +chart_type: ChartType
+    }
+    class ChartSelector {
+        +MAX_PIE_SEGMENTS
+        +MIN_SCATTER_POINTS
+        +MIN_LINE_POINTS
+        +MAX_BAR_CATEGORIES
+        +HEATMAP_MIN_DIMENSIONS
+        +_analyze_query()
+        +_has_time_dimension()
+        +_infer_data_types()
+        +_validate_llm_hint()
+        +select_chart()
+    }
+    class RagService {
+        +__init__()
+        +generate_sql()
+    }
+    class SqlService {
+        +__init__()
+        +execute_query()
+    }
+    class MockBusinessRAG {
+        +retrieve_context()
+    }
+    class MockConfidenceScorer {
+        +score()
+    }
+    class MockSQLGenerator {
+        +generate()
+    }
+    class TestSchemaValidator {
+        +test_valid_schema()
+        +test_invalid_table()
+        +test_invalid_column()
+    }
+    class TestSyntaxChecker {
+        +test_valid_syntax()
+        +test_invalid_syntax()
+    }
+    class TestSemanticValidator {
+        +test_valid_semantics()
+        +test_aggregate_in_where()
+        +test_missing_group_by()
+    }
+    class TestContextChecker {
+        +test_context_alignment()
+        +test_context_ignored()
+    }
+    class TestConfidenceScorer {
+        +test_high_confidence()
+        +test_low_confidence_hallucination()
+    }
+    class TestSelfCorrector {
+        +setup_method()
+        +test_correct_successful()
+        +test_correct_fail()
+    }
+    class TestRetrievalQualityAssessor {
+        +setup_method()
+        +test_relevance_high()
+        +test_relevance_low()
+        +test_coverage_perfect()
+        +test_assess_overall()
+        +test_assess_empty()
+    }
+    class TestAdaptiveRetriever {
+        +setup_method()
+        +test_retrieve_converges_immediately()
+        +test_retrieve_needs_more()
+        +test_max_iterations()
+    }
+    class TestAnswerVerifier {
+        +setup_method()
+        +test_extract_sql_elements()
+        +test_verify_faithful()
+        +test_verify_hallucination()
+    }
+    class TestSelfReflectiveRAG {
+        +setup_method()
+        +test_end_to_end_success()
+        +test_end_to_end_correction()
+    }
+    Base <|-- Item
+    BaseModel <|-- QueryRequest
+    BaseModel <|-- QueryResponse
+    str <|-- ChartType
+    Enum <|-- ChartType
+    BaseModel <|-- VisualizationMetadata
+    BaseModel <|-- VisualizationResult
+```
