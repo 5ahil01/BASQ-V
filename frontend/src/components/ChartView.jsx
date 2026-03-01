@@ -296,46 +296,78 @@ const ChartView = ({ data, chartType }) => {
     );
   };
 
-  // Heatmap Chart Implementation (keeping manual for now as Chart.js doesn't have built-in heatmap)
+  // Helper function to get max value from data
+  const getMaxValue = () => {
+    if (!Array.isArray(data)) return 1;
+    return Math.max(...data.map((item) => item.value || 0), 1);
+  };
+
+  // Heatmap Chart Implementation using horizontal Bar chart as a simple heatmap alternative
   const renderHeatmapChart = () => {
+    if (!Array.isArray(data) || data.length === 0) {
+      return <p className="text-slate-400">No data available for heatmap</p>;
+    }
+
     const maxValue = getMaxValue();
+    
+    // Create gradient-like background colors for each bar based on intensity
+    const heatmapColors = data.map((item) => {
+      const intensity = (item.value || 0) / (maxValue || 1);
+      return `rgba(239, 68, 68, ${Math.max(0.2, intensity)})`;
+    });
+
+    const heatmapData = {
+      labels: data.map((item) => item.label || item.name || "Unknown"),
+      datasets: [
+        {
+          label: "Value",
+          data: data.map((item) => item.value || 0),
+          backgroundColor: heatmapColors,
+          borderColor: 'rgba(255, 255, 255, 0.3)',
+          borderWidth: 1,
+        },
+      ],
+    };
+
+    const options = {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          backgroundColor: "rgba(15, 23, 42, 0.9)",
+          titleColor: "#f1f5f9",
+          bodyColor: "#cbd5e1",
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: "#94a3b8",
+          },
+          grid: {
+            color: "rgba(255, 255, 255, 0.05)",
+          },
+        },
+        y: {
+          ticks: {
+            color: "#94a3b8",
+          },
+          grid: {
+            display: false,
+          },
+        },
+      },
+    };
+
     return (
       <div className="w-full">
         <h3 className="text-lg text-slate-300 mb-5 font-semibold">Heatmap</h3>
-        <div className="flex flex-wrap gap-3 w-full p-2">
-          {Array.isArray(data) &&
-            data.map((item, index) => {
-              const intensity = Math.min(
-                1,
-                Math.max(0.15, (item.value || 0) / (maxValue || 1))
-              );
-              return (
-                <div
-                  key={index}
-                  className="flex flex-col items-center gap-2 group relative"
-                >
-                  <div
-                    className="w-20 h-20 rounded-md flex items-center justify-center transition-all duration-300 hover:scale-110 hover:z-10 cursor-pointer border border-white/10"
-                    style={{
-                      backgroundColor: `rgba(239, 68, 68, ${intensity})`,
-                      boxShadow: `0 0 15px rgba(239, 68, 68, ${intensity * 0.5})`,
-                    }}
-                    title={
-                      (item.label || item.name || "Item " + (index + 1)) +
-                      ": " +
-                      item.value
-                    }
-                  >
-                    <span className="text-white font-semibold text-sm drop-shadow-md">
-                      {item.value}
-                    </span>
-                  </div>
-                  <div className="text-slate-400 text-xs w-20 text-center overflow-hidden text-ellipsis whitespace-nowrap">
-                    {item.label || item.name || `Item ${index + 1}`}
-                  </div>
-                </div>
-              );
-            })}
+        <div className="h-[350px] w-full">
+          <Bar data={heatmapData} options={options} />
         </div>
       </div>
     );
@@ -378,12 +410,6 @@ const ChartView = ({ data, chartType }) => {
         {renderTableView()}
       </div>
     );
-  };
-
-  // Helper function to get max value from data
-  const getMaxValue = () => {
-    if (!Array.isArray(data)) return 1;
-    return Math.max(...data.map((item) => item.value || 0), 1);
   };
 
   return (
