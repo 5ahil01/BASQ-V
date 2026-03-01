@@ -1,11 +1,49 @@
 import React from "react";
 import PropTypes from "prop-types";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  Title,
+} from "chart.js";
+import { Pie, Bar, Line, Doughnut } from "react-chartjs-2";
+
+// Register Chart.js components
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  Title
+);
 
 /**
  * ChartView Component
- * Shows charts ONLY if data is valid with graceful error handling
+ * Shows charts using Chart.js library with graceful error handling
  */
 const ChartView = ({ data, chartType }) => {
+  // Chart.js color palette
+  const chartColors = [
+    "#FF6384",
+    "#36A2EB",
+    "#FFCE56",
+    "#4BC0C0",
+    "#9966FF",
+    "#FF9F40",
+    "#FF6384",
+    "#C9CBCF",
+  ];
+
   // Validate data exists and is not empty
   const isValidData = () => {
     if (!data) return false;
@@ -13,6 +51,60 @@ const ChartView = ({ data, chartType }) => {
     if (typeof data === "object" && Object.keys(data).length === 0)
       return false;
     return true;
+  };
+
+  // Prepare Chart.js data format
+  const getChartData = () => {
+    if (!Array.isArray(data) || data.length === 0) {
+      return { labels: [], datasets: [] };
+    }
+
+    const labels = data.map((item) => item.label || item.name || "Unknown");
+    const values = data.map((item) => item.value || 0);
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: "Value",
+          data: values,
+          backgroundColor: chartColors,
+          borderColor: chartColors.map((color) => color),
+          borderWidth: 1,
+        },
+      ],
+    };
+  };
+
+  // Chart.js options
+  const getChartOptions = (title) => {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {
+            color: "#94a3b8",
+            padding: 15,
+            font: {
+              size: 12,
+            },
+          },
+        },
+        title: {
+          display: false,
+          text: title,
+        },
+        tooltip: {
+          backgroundColor: "rgba(15, 23, 42, 0.9)",
+          titleColor: "#f1f5f9",
+          bodyColor: "#cbd5e1",
+          borderColor: "rgba(255, 255, 255, 0.1)",
+          borderWidth: 1,
+        },
+      },
+    };
   };
 
   // If no data, show empty state message
@@ -26,19 +118,23 @@ const ChartView = ({ data, chartType }) => {
 
   // Render chart based on chartType
   const renderChart = () => {
+    const chartData = getChartData();
+
     try {
       switch (chartType?.toLowerCase()) {
         case "bar":
         case "horizontalbar":
-          return renderBarChart();
+          return renderBarChart(chartData);
 
         case "line":
         case "area":
-          return renderLineChart();
+          return renderLineChart(chartData);
 
         case "pie":
+          return renderPieChart(chartData);
+
         case "doughnut":
-          return renderPieChart();
+          return renderDoughnutChart(chartData);
 
         case "kpi":
           return renderKPI();
@@ -64,134 +160,111 @@ const ChartView = ({ data, chartType }) => {
     }
   };
 
-  // Bar Chart Implementation
-  const renderBarChart = () => {
+  // Bar Chart Implementation using Chart.js
+  const renderBarChart = (chartData) => {
+    const options = {
+      ...getChartOptions("Bar Chart"),
+      scales: {
+        x: {
+          ticks: {
+            color: "#94a3b8",
+          },
+          grid: {
+            color: "rgba(255, 255, 255, 0.05)",
+          },
+        },
+        y: {
+          ticks: {
+            color: "#94a3b8",
+          },
+          grid: {
+            color: "rgba(255, 255, 255, 0.05)",
+          },
+        },
+      },
+    };
+
     return (
       <div className="w-full">
         <h3 className="text-lg text-slate-300 mb-5 font-semibold">Bar Chart</h3>
-        <div className="flex flex-col gap-4 w-full">
-          {Array.isArray(data) &&
-            data.map((item, index) => (
-              <div key={index} className="flex items-center gap-4 w-full">
-                <div className="w-[120px] text-slate-400 text-sm text-right shrink-0 whitespace-nowrap overflow-hidden text-ellipsis">
-                  {item.label || item.name || `Item ${index + 1}`}
-                </div>
-                <div className="flex-1 bg-white/5 h-8 rounded-md overflow-hidden relative">
-                  <div
-                    className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-md flex items-center px-3 min-w-[40px] transition-all duration-[1s] ease-out shadow-[0_0_15px_rgba(96,165,250,0.3)]"
-                    style={{
-                      width: `${Math.min(100, (item.value / getMaxValue()) * 100)}%`,
-                    }}
-                  >
-                    <span className="text-white font-semibold text-[0.85rem] drop-shadow-md">
-                      {item.value}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
+        <div className="h-[350px] w-full">
+          <Bar data={chartData} options={options} />
         </div>
       </div>
     );
   };
 
-  // Line Chart Implementation (simplified visualization)
-  const renderLineChart = () => {
-    return (
-      <div className="chart-container line-chart">
-        <h3>Line Chart</h3>
-        <div className="chart-content">
-          <svg width="100%" height="300" viewBox="0 0 500 300">
-            {/* Background grid */}
-            <line
-              x1="50"
-              y1="250"
-              x2="450"
-              y2="250"
-              stroke="#ddd"
-              strokeWidth="2"
-            />
-            <line
-              x1="50"
-              y1="50"
-              x2="50"
-              y2="250"
-              stroke="#ddd"
-              strokeWidth="2"
-            />
+  // Line Chart Implementation using Chart.js
+  const renderLineChart = (chartData) => {
+    // Update dataset for line chart styling
+    const lineData = {
+      ...chartData,
+      datasets: chartData.datasets.map((ds) => ({
+        ...ds,
+        borderColor: "#36A2EB",
+        backgroundColor: "rgba(54, 162, 235, 0.2)",
+        fill: chartType?.toLowerCase() === "area",
+        tension: 0.4,
+      })),
+    };
 
-            {/* Plot data points */}
-            {Array.isArray(data) && renderLinePoints()}
-          </svg>
-          <div className="chart-legend">
-            {Array.isArray(data) &&
-              data.map((item, index) => (
-                <div key={index} className="legend-item">
-                  {item.label || item.name || `Point ${index + 1}`}:{" "}
-                  {item.value}
-                </div>
-              ))}
-          </div>
+    const options = {
+      ...getChartOptions("Line Chart"),
+      scales: {
+        x: {
+          ticks: {
+            color: "#94a3b8",
+          },
+          grid: {
+            color: "rgba(255, 255, 255, 0.05)",
+          },
+        },
+        y: {
+          ticks: {
+            color: "#94a3b8",
+          },
+          grid: {
+            color: "rgba(255, 255, 255, 0.05)",
+          },
+        },
+      },
+    };
+
+    return (
+      <div className="w-full">
+        <h3 className="text-lg text-slate-300 mb-5 font-semibold">
+          {chartType?.toLowerCase() === "area" ? "Area Chart" : "Line Chart"}
+        </h3>
+        <div className="h-[350px] w-full">
+          <Line data={lineData} options={options} />
         </div>
       </div>
     );
   };
 
-  // Helper to render line chart points
-  const renderLinePoints = () => {
-    if (!Array.isArray(data) || data.length === 0) return null;
-
-    const maxValue = getMaxValue();
-    const points = data.map((item, index) => {
-      const x = 50 + index * (400 / (data.length - 1 || 1));
-      const y = 250 - (item.value / maxValue) * 200;
-      return { x, y, value: item.value };
-    });
+  // Pie Chart Implementation using Chart.js
+  const renderPieChart = (chartData) => {
+    const options = getChartOptions("Pie Chart");
 
     return (
-      <>
-        {/* Line path */}
-        <polyline
-          points={points.map((p) => `${p.x},${p.y}`).join(" ")}
-          fill="none"
-          stroke="#2196F3"
-          strokeWidth="2"
-        />
-        {/* Data points */}
-        {points.map((point, index) => (
-          <circle key={index} cx={point.x} cy={point.y} r="4" fill="#2196F3" />
-        ))}
-      </>
+      <div className="w-full">
+        <h3 className="text-lg text-slate-300 mb-5 font-semibold">Pie Chart</h3>
+        <div className="h-[350px] w-full flex justify-center">
+          <Pie data={chartData} options={options} />
+        </div>
+      </div>
     );
   };
 
-  // Pie Chart Implementation (simplified)
-  const renderPieChart = () => {
+  // Doughnut Chart Implementation using Chart.js
+  const renderDoughnutChart = (chartData) => {
+    const options = getChartOptions("Doughnut Chart");
+
     return (
-      <div className="chart-container pie-chart">
-        <h3>Pie Chart</h3>
-        <div className="chart-content">
-          <div className="pie-items">
-            {Array.isArray(data) &&
-              data.map((item, index) => {
-                const percentage = (
-                  (item.value / getTotalValue()) *
-                  100
-                ).toFixed(1);
-                return (
-                  <div key={index} className="pie-item">
-                    <div
-                      className="pie-color"
-                      style={{ backgroundColor: getColor(index) }}
-                    ></div>
-                    <span className="pie-label">
-                      {item.label || item.name || `Item ${index + 1}`}:{" "}
-                      {item.value} ({percentage}%)
-                    </span>
-                  </div>
-                );
-              })}
-          </div>
+      <div className="w-full">
+        <h3 className="text-lg text-slate-300 mb-5 font-semibold">Doughnut Chart</h3>
+        <div className="h-[350px] w-full flex justify-center">
+          <Doughnut data={chartData} options={options} />
         </div>
       </div>
     );
@@ -209,17 +282,21 @@ const ChartView = ({ data, chartType }) => {
     const value = item[keys[1]];
 
     return (
-      <div className="chart-container kpi-card">
-        <h3>KPI</h3>
-        <div className="kpi-content">
-          <div className="kpi-value">{value}</div>
-          <div className="kpi-label">{label}</div>
+      <div className="w-full">
+        <h3 className="text-lg text-slate-300 mb-5 font-semibold">KPI</h3>
+        <div className="flex items-center justify-center h-[200px] bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl border border-white/10">
+          <div className="text-center">
+            <div className="text-5xl font-bold text-white mb-2 drop-shadow-lg">
+              {typeof value === "number" ? value.toLocaleString() : value}
+            </div>
+            <div className="text-slate-400 text-lg">{label}</div>
+          </div>
         </div>
       </div>
     );
   };
 
-  // Heatmap Chart Implementation
+  // Heatmap Chart Implementation (keeping manual for now as Chart.js doesn't have built-in heatmap)
   const renderHeatmapChart = () => {
     const maxValue = getMaxValue();
     return (
@@ -230,7 +307,7 @@ const ChartView = ({ data, chartType }) => {
             data.map((item, index) => {
               const intensity = Math.min(
                 1,
-                Math.max(0.15, (item.value || 0) / (maxValue || 1)),
+                Math.max(0.15, (item.value || 0) / (maxValue || 1))
               );
               return (
                 <div
@@ -307,25 +384,6 @@ const ChartView = ({ data, chartType }) => {
   const getMaxValue = () => {
     if (!Array.isArray(data)) return 1;
     return Math.max(...data.map((item) => item.value || 0), 1);
-  };
-
-  // Helper function to get total value for percentage calculations
-  const getTotalValue = () => {
-    if (!Array.isArray(data)) return 1;
-    return data.reduce((sum, item) => sum + (item.value || 0), 0) || 1;
-  };
-
-  // Helper function to get colors for pie chart
-  const getColor = (index) => {
-    const colors = [
-      "#FF6384",
-      "#36A2EB",
-      "#FFCE56",
-      "#4BC0C0",
-      "#9966FF",
-      "#FF9F40",
-    ];
-    return colors[index % colors.length];
   };
 
   return (

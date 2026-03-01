@@ -7,7 +7,7 @@ import LoadingOverlay from "../components/LoadingOverlay";
 import HeaderBar from "../components/HeaderBar";
 import { sendQuery, sendClarification } from "../services/api";
 import { normalizeResponse } from "../utils/responseMapper";
-import { dummyQueryResponse } from "../services/api";
+//import { dummyQueryResponse } from "../services/api";
 
 /**
  * Dashboard Component
