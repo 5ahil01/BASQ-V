@@ -1,58 +1,682 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
+/* ═══════════════════════════════
+   TOKENS
+═══════════════════════════════ */
+:root {
+  --page-bg:       #f0f2f6;
+  --white:         #ffffff;
+  --card-bg:       #ffffff;
+
+  --border-1:      #e0e4ef;   /* lightest */
+  --border-2:      #c8cde0;   /* medium   */
+  --border-3:      #a0a8c0;   /* strong   */
+
+  --accent:        #3b5bdb;
+  --accent-hover:  #2f4ac4;
+  --accent-light:  #eef2ff;
+  --accent-border: #bec8f7;
+
+  --text-1:        #111827;
+  --text-2:        #374151;
+  --text-3:        #6b7280;
+  --text-4:        #9ca3af;
+
+  --green:         #059669;
+  --green-bg:      #ecfdf5;
+  --green-bd:      #6ee7b7;
+  --red:           #dc2626;
+  --red-bg:        #fef2f2;
+  --red-bd:        #fca5a5;
+  --amber:         #d97706;
+  --amber-bg:      #fffbeb;
+  --amber-bd:      #fcd34d;
+
+  --radius-s: 8px;
+  --radius-m: 12px;
+  --radius-l: 16px;
+
+  --sh-s: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --sh-m: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.05);
+  --sh-l: 0 10px 25px rgba(0,0,0,.10), 0 4px 10px rgba(0,0,0,.06);
+  --sh-xl:0 20px 50px rgba(0,0,0,.14), 0 8px 20px rgba(0,0,0,.08);
+  --ring: 0 0 0 3px rgba(59,91,219,.2);
+}
+
+/* ═══════════════════════════════
+   KEYFRAMES
+═══════════════════════════════ */
 @theme {
-  --animate-fade-in-down: fadeInDown 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-  --animate-fade-in-up: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-title-glow: titleGlow 3s ease-in-out infinite alternate;
-  --animate-shake: shake 0.5s ease-in-out;
+  --animate-fade-in-down: fadeInDown 0.45s cubic-bezier(0.16,1,0.3,1) both;
+  --animate-fade-in-up:   fadeInUp   0.45s cubic-bezier(0.16,1,0.3,1) both;
+  --animate-shake:        shake      0.4s ease-in-out;
 
   @keyframes fadeInDown {
-    from {
-      opacity: 0;
-      transform: translateY(-30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity:0; transform:translateY(-14px); }
+    to   { opacity:1; transform:translateY(0); }
   }
-
   @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity:0; transform:translateY(12px); }
+    to   { opacity:1; transform:translateY(0); }
   }
-
-  @keyframes titleGlow {
-    from {
-      filter: drop-shadow(0 0 20px rgba(96, 165, 250, 0.3));
-    }
-    to {
-      filter: drop-shadow(0 0 40px rgba(168, 85, 247, 0.5));
-    }
-  }
-
   @keyframes shake {
-    0%,
-    100% {
-      transform: translateX(0);
-    }
-    25% {
-      transform: translateX(-8px);
-    }
-    75% {
-      transform: translateX(8px);
-    }
+    0%,100%{ transform:translateX(0); }
+    25%    { transform:translateX(-5px); }
+    75%    { transform:translateX(5px); }
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes popIn {
+    from { opacity:0; transform:scale(0.94) translateY(8px); }
+    to   { opacity:1; transform:scale(1) translateY(0); }
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; }
+    50%     { opacity:0.4; }
   }
 }
 
+/* ═══════════════════════════════
+   BASE
+═══════════════════════════════ */
 @layer base {
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
   body {
-    @apply font-sans text-base leading-relaxed text-slate-200 bg-slate-900 overflow-x-hidden;
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-1) !important;
+    background: var(--page-bg) !important;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
+
+  ::selection { background: var(--accent-border); color: var(--text-1); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+}
+
+/* ═══════════════════════════════
+   NAVBAR
+═══════════════════════════════ */
+.dv-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--white);
+  border-bottom: 1.5px solid var(--border-1);
+  box-shadow: var(--sh-s);
+}
+
+.dv-navbar-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 28px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dv-navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dv-brand-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-s);
+  background: var(--accent);
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 2px 8px rgba(59,91,219,.35);
+  flex-shrink: 0;
+}
+
+.dv-brand-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.02em;
+}
+
+.dv-brand-name span { color: var(--accent); }
+
+.dv-navbar-live {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--green);
+  background: var(--green-bg);
+  border: 1px solid var(--green-bd);
+  border-radius: 99px;
+  padding: 4px 12px;
+  letter-spacing: 0.04em;
+}
+
+.dv-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════
+   PAGE BODY
+═══════════════════════════════ */
+.dv-page {
+  min-height: 100vh;
+  background: var(--page-bg);
+}
+
+/* Neutralise the old dark Tailwind wrapper that Dashboard had */
+.dashboard-bg-effects { display: contents !important; }
+
+.dv-body {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 36px 28px 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ═══════════════════════════════
+   HEADER SECTION
+═══════════════════════════════ */
+.dv-header-section {
+  animation: fadeInDown 0.45s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* Strip everything HeaderBar renders and let ours show */
+.dv-header-section > *,
+.dv-header-section .header-bar {
+  all: unset !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+}
+
+.dv-header-section h1,
+.dv-header-section [class*="title"] {
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 30px !important;
+  font-weight: 700 !important;
+  color: var(--text-1) !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.15 !important;
+  background: none !important;
+  -webkit-text-fill-color: unset !important;
+  filter: none !important;
+  animation: none !important;
+}
+
+.dv-header-section p,
+.dv-header-section [class*="subtitle"] {
+  font-size: 13.5px !important;
+  font-weight: 400 !important;
+  color: var(--text-3) !important;
+  background: none !important;
+  -webkit-text-fill-color: unset !important;
+  letter-spacing: 0 !important;
+}
+
+/* ═══════════════════════════════
+   QUERY SECTION
+═══════════════════════════════ */
+.dv-query-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: fadeInUp 0.45s cubic-bezier(0.16,1,0.3,1) 0.05s both;
+}
+
+.dv-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding-left: 2px;
+}
+
+/* THE CARD — this is the visible bordered box */
+.dv-query-card {
+  background: var(--white);
+  border: 1.5px solid var(--border-2);
+  border-radius: var(--radius-l);
+  box-shadow: var(--sh-m);
+  padding: 12px 12px 12px 18px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.dv-query-card:focus-within {
+  border-color: var(--accent);
+  box-shadow: var(--sh-m), var(--ring);
+}
+
+/* ── NUKE the dark QueryInput internals ── */
+
+/* Any wrapper div/form inside */
+.dv-query-card > *,
+.dv-query-card form,
+.dv-query-card > div,
+.dv-query-card > div > div {
+  display: contents !important;
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  width: 100% !important;
+}
+
+/* The textarea itself */
+.dv-query-card textarea,
+.dv-query-card input[type="text"],
+.dv-query-card input[type="search"] {
+  flex: 1 !important;
+  display: block !important;
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 14.5px !important;
+  font-weight: 400 !important;
+  color: var(--text-1) !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  resize: none !important;
+  padding: 10px 0 !important;
+  min-height: 28px !important;
+  max-height: 200px !important;
+  line-height: 1.65 !important;
+  border-radius: 0 !important;
+  width: 100% !important;
+  caret-color: var(--accent) !important;
+}
+
+.dv-query-card textarea::placeholder,
+.dv-query-card input::placeholder {
+  color: var(--text-4) !important;
+  font-weight: 400 !important;
+}
+
+/* The send button */
+.dv-query-card button {
+  flex-shrink: 0 !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+  border-radius: var(--radius-m) !important;
+  background: var(--accent) !important;
+  border: none !important;
+  color: #fff !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background 0.18s, transform 0.14s, box-shadow 0.18s !important;
+  box-shadow: 0 2px 8px rgba(59,91,219,.32) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  margin-bottom: 0px !important;
+  flex-basis: 40px !important;
+}
+
+.dv-query-card button:hover:not(:disabled) {
+  background: var(--accent-hover) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 14px rgba(59,91,219,.42) !important;
+}
+
+.dv-query-card button:active:not(:disabled) {
+  transform: translateY(0) !important;
+}
+
+.dv-query-card button:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+/* Icons inside the button */
+.dv-query-card button svg,
+.dv-query-card button img {
+  width: 17px !important;
+  height: 17px !important;
+  flex-shrink: 0 !important;
+  stroke: white !important;
+  fill: none !important;
+  display: block !important;
+}
+
+/* Hint below input */
+.dv-query-hint {
+  font-size: 11px;
+  color: var(--text-4);
+  padding-left: 4px;
+}
+
+.dv-query-hint kbd {
+  font-family: inherit;
+  font-size: 10.5px;
+  padding: 1px 5px;
+  background: var(--white);
+  border: 1px solid var(--border-2);
+  border-radius: 4px;
+  color: var(--text-3);
+  box-shadow: 0 1px 0 var(--border-2);
+}
+
+/* ═══════════════════════════════
+   ERROR SECTION
+═══════════════════════════════ */
+.dv-error-section {
+  animation: shake 0.4s ease-in-out, fadeInUp 0.3s ease both;
+}
+
+/* Target ErrorBox however it's structured */
+.dv-error-section > *,
+.error-box {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+  background: var(--red-bg) !important;
+  border: 1.5px solid var(--red-bd) !important;
+  border-left: 4px solid var(--red) !important;
+  border-radius: var(--radius-m) !important;
+  padding: 14px 16px !important;
+  color: #991b1b !important;
+  font-size: 13.5px !important;
+  line-height: 1.55 !important;
+  box-shadow: none !important;
+}
+
+/* Close button inside ErrorBox */
+.dv-error-section button,
+.error-box button {
+  background: none !important;
+  border: none !important;
+  color: #991b1b !important;
+  cursor: pointer !important;
+  font-size: 18px !important;
+  opacity: 0.5 !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  margin-left: auto !important;
+  box-shadow: none !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: unset !important;
+  border-radius: 0 !important;
+  flex-shrink: 0 !important;
+  transform: none !important;
+}
+
+.dv-error-section button:hover,
+.error-box button:hover { opacity:1 !important; transform:none !important; }
+
+/* ═══════════════════════════════
+   RESULTS SECTION
+═══════════════════════════════ */
+.dv-results-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Strip ResultsPanel's own wrapper */
+.dv-results-section > * {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* Individual result card children */
+.dv-results-section .result-card,
+.dv-results-section [class*="result"],
+.dv-results-section [class*="response"],
+.dv-results-section [class*="answer"],
+.dv-results-section article,
+.dv-results-section > * > div {
+  background: var(--white) !important;
+  border: 1.5px solid var(--border-1) !important;
+  border-radius: var(--radius-l) !important;
+  padding: 20px 22px !important;
+  box-shadow: var(--sh-m) !important;
+  color: var(--text-1) !important;
+  font-size: 14px !important;
+  line-height: 1.72 !important;
+  animation: fadeInUp 0.4s cubic-bezier(0.16,1,0.3,1) both !important;
+}
+
+/* Status chips */
+[class*="status"],
+.result-status {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 3px 10px !important;
+  border-radius: 99px !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+}
+
+.status-success, [class*="success"] { background: var(--green-bg) !important; border: 1px solid var(--green-bd) !important; color: var(--green) !important; }
+.status-error,   [class*="error"]   { background: var(--red-bg)   !important; border: 1px solid var(--red-bd)   !important; color: var(--red)   !important; }
+.status-rejected,[class*="rejected"]{ background: var(--amber-bg) !important; border: 1px solid var(--amber-bd) !important; color: var(--amber) !important; }
+
+/* Code in results */
+.dv-results-section pre {
+  background: #f5f6fa !important;
+  border: 1.5px solid var(--border-1) !important;
+  border-radius: var(--radius-s) !important;
+  padding: 14px 16px !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 12.5px !important;
+  color: var(--text-2) !important;
+  overflow-x: auto !important;
+  margin: 10px 0 !important;
+}
+
+.dv-results-section code {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 12.5px !important;
+  background: #eef0f7 !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  color: var(--accent-hover) !important;
+}
+
+/* ═══════════════════════════════
+   CLARIFICATION MODAL
+═══════════════════════════════ */
+.modal-backdrop,
+[class*="modal-backdrop"],
+[class*="clarification-backdrop"] {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(17,24,39,.35) !important;
+  backdrop-filter: blur(4px) !important;
+  z-index: 100 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 24px !important;
+}
+
+.modal-card,
+[class*="modal-card"],
+[class*="clarification-modal"] {
+  background: var(--white) !important;
+  border: 1.5px solid var(--border-1) !important;
+  border-radius: var(--radius-l) !important;
+  box-shadow: var(--sh-xl) !important;
+  padding: 28px !important;
+  max-width: 460px !important;
+  width: 100% !important;
+  animation: popIn 0.28s cubic-bezier(0.34,1.56,0.64,1) both !important;
+}
+
+[class*="modal"] h2,
+[class*="modal"] h3 {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: var(--text-1) !important;
+  margin-bottom: 14px !important;
+}
+
+[class*="clarification-question"],
+[class*="modal"] p {
+  font-size: 13.5px !important;
+  color: var(--text-2) !important;
+  line-height: 1.65 !important;
+  padding: 11px 14px !important;
+  background: #f8f9fc !important;
+  border-left: 3px solid var(--accent) !important;
+  border-radius: 0 var(--radius-s) var(--radius-s) 0 !important;
+  margin-bottom: 16px !important;
+}
+
+[class*="option"],
+[class*="clarification-option"] {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  color: var(--text-1) !important;
+  background: #f8f9fc !important;
+  border: 1.5px solid var(--border-1) !important;
+  border-radius: var(--radius-s) !important;
+  padding: 11px 14px !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  margin-bottom: 6px !important;
+  transition: all 0.18s !important;
+  box-shadow: none !important;
+  min-width: unset !important;
+  height: auto !important;
+  width: 100% !important;
+}
+
+[class*="option"]:hover { border-color: var(--accent) !important; background: var(--accent-light) !important; color: var(--accent) !important; }
+[class*="option"].selected { border-color: var(--accent) !important; background: var(--accent-light) !important; color: var(--accent) !important; font-weight:600 !important; }
+
+/* Modal buttons — cancel */
+[class*="cancel"],
+[class*="modal"] button:not([class*="submit"]):not([class*="confirm"]) {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--text-2) !important;
+  background: transparent !important;
+  border: 1.5px solid var(--border-2) !important;
+  border-radius: var(--radius-s) !important;
+  padding: 9px 18px !important;
+  cursor: pointer !important;
+  transition: all 0.15s !important;
+  box-shadow: none !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: unset !important;
+}
+
+/* Modal buttons — submit */
+[class*="submit"],
+[class*="confirm"] {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: white !important;
+  background: var(--accent) !important;
+  border: none !important;
+  border-radius: var(--radius-s) !important;
+  padding: 9px 20px !important;
+  cursor: pointer !important;
+  transition: all 0.18s !important;
+  box-shadow: 0 2px 8px rgba(59,91,219,.28) !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: unset !important;
+}
+
+[class*="submit"]:hover:not(:disabled) { background: var(--accent-hover) !important; transform: translateY(-1px) !important; }
+[class*="submit"]:disabled { opacity:0.5 !important; cursor:not-allowed !important; transform:none !important; }
+
+/* ═══════════════════════════════
+   LOADING OVERLAY
+═══════════════════════════════ */
+.loading-overlay,
+[class*="loading-overlay"] {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(240,242,246,.78) !important;
+  backdrop-filter: blur(3px) !important;
+  z-index: 90 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.loading-card,
+[class*="loading"] > div,
+[class*="loading-card"] {
+  background: var(--white) !important;
+  border: 1.5px solid var(--border-1) !important;
+  border-radius: var(--radius-l) !important;
+  box-shadow: var(--sh-l) !important;
+  padding: 22px 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both !important;
+}
+
+[class*="spinner"],
+.loading-spinner {
+  width: 22px !important;
+  height: 22px !important;
+  border: 2.5px solid var(--accent-border) !important;
+  border-top-color: var(--accent) !important;
+  border-radius: 50% !important;
+  animation: spin 0.7s linear infinite !important;
+  flex-shrink: 0 !important;
+  background: none !important;
+}
+
+[class*="loading"] p,
+[class*="loading"] span,
+.loading-message {
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  color: var(--text-2) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* ═══════════════════════════════
+   RESPONSIVE
+═══════════════════════════════ */
+@media (max-width: 640px) {
+  .dv-body { padding: 24px 16px 56px; gap: 18px; }
+  .dv-navbar-inner { padding: 0 16px; }
+  .dv-header-section h1 { font-size: 24px !important; }
 }
