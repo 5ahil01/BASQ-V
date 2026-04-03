@@ -165,7 +165,7 @@ class SelfReflectiveRAG:
         total_time_ms = (time.time() - start_time) * 1000
         
         return {
-            'status': 'success' if final_confidence >= 0.70 else 'low_confidence',
+            'status': 'success',
             'sql': final_sql,
             'sql_confidence': final_confidence,
             'retrieval_confidence': retrieval_confidence,

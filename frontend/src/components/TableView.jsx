@@ -57,45 +57,45 @@ const TableView = ({ data }) => {
   };
 
   return (
-    <div className="w-full bg-slate-900/40 rounded-2xl p-6 border border-white/5 mt-5">
+    <div className="w-full bg-white rounded-2xl p-6 border border-gray-200 mt-5">
       <div className="flex justify-between items-center mb-5">
-        <h3 className="text-[1.2rem] text-slate-300 m-0 font-semibold">
+        <h3 className="text-[1.2rem] text-gray-800 m-0 font-semibold">
           Data Table
         </h3>
-        <span className="text-slate-400 text-sm">
+        <span className="text-gray-500 text-sm">
           {tableData.length} {tableData.length === 1 ? "row" : "rows"}
         </span>
       </div>
 
       {/* Scrollable container for large datasets */}
-      <div className="w-full overflow-x-auto rounded-lg border border-white/10">
+      <div className="w-full overflow-x-auto rounded-lg border border-gray-200">
         <table className="w-full border-collapse text-left text-sm whitespace-nowrap">
-          <thead className="bg-slate-800 border-b border-white/10">
+          <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="py-3 px-4 text-slate-400 font-semibold w-12 text-center">
+              <th className="py-3 px-4 text-gray-600 font-semibold w-12 text-center">
                 #
               </th>
               {headers.map((header, index) => (
                 <th
                   key={index}
-                  className="py-3 px-4 text-slate-400 font-semibold"
+                  className="py-3 px-4 text-gray-600 font-semibold"
                 >
                   {formatHeader(header)}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5">
+          <tbody className="divide-y divide-gray-200">
             {tableData.map((row, rowIndex) => (
               <tr
                 key={rowIndex}
-                className="hover:bg-white/5 transition-colors duration-150"
+                className="hover:bg-gray-50 transition-colors duration-150"
               >
-                <td className="py-3 px-4 text-slate-500 font-medium text-center">
+                <td className="py-3 px-4 text-gray-500 font-medium text-center">
                   {rowIndex + 1}
                 </td>
                 {headers.map((header, colIndex) => (
-                  <td key={colIndex} className="py-3 px-4 text-slate-200">
+                  <td key={colIndex} className="py-3 px-4 text-gray-800">
                     {typeof row === "object"
                       ? renderCellValue(row[header])
                       : renderCellValue(row)}

@@ -67,10 +67,10 @@ def query_database(request: schemas.QueryRequest):
         # 3. Select Chart
         confidence = reflection_result.get('sql_confidence', 0.5)
         # Using recommendation or hints if available (for future extensions)
-        chart_result = chart_selector.select_chart(generated_sql or "", results, confidence=confidence)
+        chart_result = chart_selector.select_chart(generated_sql or "", results, nl_query=request.query)
         chart_suggestion = {
-            "type": chart_result.chart_type.value,
-            "metadata": chart_result.metadata.dict()
+            "type": chart_result.chart_type,
+            "metadata": chart_result.metadata.reason
         }
 
         return schemas.QueryResponse(
