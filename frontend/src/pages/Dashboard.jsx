@@ -54,10 +54,10 @@ const IconPlus = () => (
 const HISTORY = [];
 
 const SUGGESTIONS = [
-  "What drove revenue last quarter?",
-  "Show me top performing products",
-  "Customer churn by segment",
-  "Sales vs target by region",
+  // "What drove revenue last quarter?",
+  // "Show me top performing products",
+  // "Customer churn by segment",
+  // "Sales vs target by region",
 ];
 
 const Dashboard = () => {
@@ -82,6 +82,7 @@ const Dashboard = () => {
       try {
         const raw = await sendQuery(query, sessionId);
         const norm = normalizeResponse(raw);
+
         if (norm.status === "clarification_required") {
           setSessionId(norm.sessionId);
           setClarificationState({
@@ -210,7 +211,7 @@ const Dashboard = () => {
         {/* Input footer */}
         <div className="bv-input-footer">
           <div className="bv-input-label">Ask a business question</div>
-          <div className="bv-input-box">
+          <div className="bv-input-box px-[100px] ">
             <QueryInput
               onSubmit={handleQuery}
               loading={loading}

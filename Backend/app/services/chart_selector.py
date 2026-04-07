@@ -273,21 +273,109 @@ class LLMIntentClassifier:
 
 You will receive:
 1. A user's natural-language analytics question.
-2. A structural summary of the SQL result set (column types, row count, etc.).
+2. A structural summary of the SQL result set (column types, row count, sample values).
 3. A list of structurally valid chart types for this data.
 
-Your job is to select the single best chart type from the candidate list that
-answers the user's question most clearly.
+Your job is to select the single best chart type from the candidate list.
 
-Rules:
+═══════════════════════════════════════════════
+CHART SELECTION RULES — follow in priority order
+═══════════════════════════════════════════════
+0. DATA TABLE (override) → chart_type: "table" 
+   • result has NO numeric column at all 
+   • No chart of any kind is possible without a measure 
+   • Example: "list countries", "show all categories"
+
+1. KPI CARD  →  chart_type: "kpi"
+   • result is exactly 1 row × 1 numeric column
+   • Example: "What is total revenue this month?"
+
+2. LINE CHART  →  chart_type: "line"
+   • one temporal column (date/month/year/quarter)
+   • one OR MORE numeric measure columns
+   • row count >= 3
+   • Example: "Show sales trend over the last 6 months"
+   • Example: "Compare revenue and profit trends over the past year"
+
+3. AREA CHART  →  chart_type: "area"
+   • same rules as LINE CHART, but the question implies
+     cumulative volume, filled region, or stacked area
+   • Example: "Show cumulative revenue growth over time"
+
+4. PIE CHART  →  chart_type: "pie"
+   • one categorical column + one numeric column
+   • row count between 2 and 6
+   • question implies proportion, share, or composition
+   • Example: "What is the revenue share by product category?"
+   • DO NOT use if row count > 6
+
+5. DONUT CHART  →  chart_type: "doughnut"
+   • same rules as PIE CHART, but the question uses
+     words like "donut", "ring", or explicitly asks for a donut
+   • Default to pie when ambiguous
+
+6. BAR CHART  →  chart_type: "bar"
+   • one categorical column + one numeric column
+   • row count between 7 and 20
+   • question implies comparison across groups
+   • category labels are short (<= 12 characters)
+   • Example: "Compare sales across all regions"
+
+7. HORIZONTAL BAR CHART  →  chart_type: "horizontalbar"
+   • same as BAR CHART, but:
+     category labels are long (> 12 characters) OR
+     the question implies ranking or ordering
+   • Example: "Rank the top 10 products by revenue"
+
+8. SCATTER PLOT  →  chart_type: "scatter"
+   • exactly two numeric columns (neither temporal)
+   • no categorical grouping column
+   • row count >= 5
+   • question implies correlation or relationship
+   • Example: "Is there a relationship between ad spend and sales?"
+
+9. HEATMAP  →  chart_type: "heatmap"
+   • exactly two categorical columns + one numeric column
+   • data forms a matrix structure
+   • Example: "Show sales volume by region and product category"
+
+10. DATA TABLE  →  chart_type: "table"
+    • row count > 20 with no clear chart pattern, OR
+    • question asks for a list, records, or raw details
+    • Example: "Show me all orders placed last week"
+
+═══════════════════════════════════════════════
+KEYWORD SIGNALS (use to break ties)
+═══════════════════════════════════════════════
+"trend / over time / monthly / quarterly"     → line or area
+"share / proportion / breakdown / percentage" → pie or doughnut
+"compare / vs / across"                       → bar or horizontalbar
+"relationship / correlation"                  → scatter
+"top N / ranking / highest / lowest"          → horizontalbar
+"breakdown by X and Y"                        → heatmap
+"total / single number"                       → kpi
+
+═══════════════════════════════════════════════
+CRITICAL RULES
+═══════════════════════════════════════════════
+- NEVER default to bar without checking all rules above.
+- Pie/doughnut is ALWAYS preferred over bar when row count <= 6
+  and the question implies share, proportion, or composition.
 - You MUST choose from the provided candidates list only.
-- Return ONLY a valid JSON object — no markdown, no explanation.
-- JSON format:
-  {
-    "intent": "<one of: trend | comparison | composition | distribution | correlation | detail>",
-    "chart_type": "<chosen chart type from candidates>",
-    "reason": "<one sentence explaining why>"
-  }
+- If no rule matches perfectly, choose the closest structural fit.
+
+═══════════════════════════════════════════════
+OUTPUT FORMAT
+═══════════════════════════════════════════════
+Return ONLY a valid JSON object. No markdown. No explanation outside the JSON.
+
+{
+  "intent": "<one of: trend | comparison | composition | distribution | correlation | ranking | detail>",
+  "chart_type": "<must be one of: kpi | line | area | pie | doughnut | bar | horizontalbar | scatter | heatmap | table>",
+  "x_axis": "<column name for x-axis or category>",
+  "y_axis": "<column name(s) for y-axis or measure>",
+  "reason": "<one sentence: which rule matched and why this chart fits>"
+}
 """
 
     def __init__(self):

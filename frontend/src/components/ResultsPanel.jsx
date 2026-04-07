@@ -2,8 +2,6 @@ import React from "react";
 import PropTypes from "prop-types";
 import ChartView from "./ChartView";
 import TableView from "./TableView";
-import ExplainabilityPanel from "./ExplainabilityPanel";
-
 /* ─────────────────────────────────────────────
    Panel shell
    ───────────────────────────────────────────── */
@@ -16,29 +14,6 @@ const Panel = ({ children, className = "" }) => (
     {children}
   </div>
 );
-
-/* ─────────────────────────────────────────────
-   Confidence badge
-   Maps numeric score → label + colour
-   ───────────────────────────────────────────── */
-const ConfidenceBadge = ({ score, label }) => {
-  const pct = Math.round((score ?? 0) * 100);
-
-  const colour =
-    pct >= 70
-      ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
-      : pct >= 40
-        ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
-        : "bg-red-500/20 text-red-300 border-red-500/30";
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${colour}`}
-    >
-      SQL confidence: {label ?? `${pct}%`}
-    </span>
-  );
-};
 
 /* ─────────────────────────────────────────────
    Recommendation badge
@@ -113,65 +88,25 @@ const ResultsPanel = ({ response, loading }) => {
             </p>
           )}
         </div>
-
-        {response.explainability && (
-          <ExplainabilityPanel
-            explainability={response.explainability}
-            sql={response.sql_query}
-          />
-        )}
       </Panel>
     );
   }
 
   /* ── Success ── */
   if (response.status === "success") {
-    const {
-      result, // actual row data  (API field name)
-      data, // fallback alias
-      chart_suggestion, // { type, x?, y?, metadata? }
-      sql_query,
-      sql_confidence,
-      recommendation,
-      explainability,
-    } = response;
+    const { data, chartSuggestion, sql, confidence, explainability } = response;
 
-    const rows = result ?? data ?? [];
-    const chartType = chart_suggestion?.type ?? "bar";
+    const rows = data ?? [];
+    const chartType = chartSuggestion?.type ?? "bar";
 
     return (
       <Panel>
-        {/* Header row — badges */}
-        <div className="flex flex-wrap items-center gap-3">
-          {sql_confidence !== undefined && (
-            <ConfidenceBadge score={sql_confidence} />
-          )}
-          <RecommendationBadge recommendation={recommendation} />
-        </div>
-
         {/* Chart */}
         {rows.length > 0 && <ChartView data={rows} chartType={chartType} />}
-
-        {/* Chart metadata (the LLM reason string) */}
-        {chart_suggestion?.metadata && (
-          <p className="text-xs text-slate-500 italic leading-relaxed">
-            {chart_suggestion.metadata}
-          </p>
-        )}
-
         {/* Table — always shown below chart */}
         {rows.length > 0 && <TableView data={rows} />}
-
         {/* SQL disclosure */}
-        <SqlBlock sql={sql_query} />
-
-        {/* Explainability */}
-        {explainability && (
-          <ExplainabilityPanel
-            explainability={explainability}
-            sql={sql_query}
-          />
-        )}
+        <SqlBlock sql={sql} />
       </Panel>
     );
   }
@@ -193,17 +128,17 @@ ResultsPanel.propTypes = {
       "error",
       "clarification_required",
     ]),
-    result: PropTypes.array, // primary data field from API
-    data: PropTypes.array, // legacy alias
-    chart_suggestion: PropTypes.shape({
+    data: PropTypes.array,
+    chartSuggestion: PropTypes.shape({
       type: PropTypes.string,
-      x: PropTypes.string,
-      y: PropTypes.string,
       metadata: PropTypes.string,
     }),
-    sql_query: PropTypes.string,
-    sql_confidence: PropTypes.number,
-    recommendation: PropTypes.string,
+    sql: PropTypes.string,
+    confidence: PropTypes.shape({
+      score: PropTypes.number,
+      label: PropTypes.string,
+      reasons: PropTypes.array,
+    }),
     explainability: PropTypes.object,
     error: PropTypes.shape({
       message: PropTypes.string,

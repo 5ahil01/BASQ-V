@@ -415,7 +415,7 @@ const ChartView = ({ data, chartType }) => {
 
   const norm = useMemo(() => {
     return normalisers[type]?.(data) ?? normalisers.bar(data);
-  }, [data, type, xKey, yKey]);
+  }, [data, type]);
 
   if (!Array.isArray(data) || data.length === 0) {
     return (
@@ -427,6 +427,8 @@ const ChartView = ({ data, chartType }) => {
 
   const renderChart = () => {
     try {
+      console.log(type);
+
       switch (type) {
         case "bar":
           return <BarChart norm={norm} horizontal={false} />;

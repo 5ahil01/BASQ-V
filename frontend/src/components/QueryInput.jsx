@@ -57,7 +57,7 @@ const QueryInput = ({ onSubmit, loading, disabled = false }) => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full px-4 md:px-8">
       <form
         onSubmit={handleSubmit}
         className="flex gap-5 items-stretch justify-center flex-wrap w-full max-w-[800px] mx-auto xl:mx-[180px] flex-col md:flex-row"

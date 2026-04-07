@@ -38,7 +38,10 @@ const toNumber = (val) => {
  * Preference order: first strictly string col → first col.
  */
 const resolveXKey = (row, keys) => {
-  return keys.find((k) => typeof row[k] === "string" && !isNumeric(row[k])) ?? keys[0];
+  return (
+    keys.find((k) => typeof row[k] === "string" && !isNumeric(row[k])) ??
+    keys[0]
+  );
 };
 
 /**
@@ -244,7 +247,9 @@ export const normaliseForScatter = (rawData) => {
 
   const keys = Object.keys(rawData[0]);
   const numericCols = keys.filter((k) => isNumeric(rawData[0][k]));
-  const stringCols = keys.filter((k) => typeof rawData[0][k] === "string" && !isNumeric(rawData[0][k]));
+  const stringCols = keys.filter(
+    (k) => typeof rawData[0][k] === "string" && !isNumeric(rawData[0][k]),
+  );
 
   // Resolve X and Y from numeric columns
   const rx = numericCols[0] ?? keys[0];
@@ -289,7 +294,9 @@ export const normaliseForHeatmap = (rawData) => {
     };
 
   const keys = Object.keys(rawData[0]);
-  const stringCols = keys.filter((k) => typeof rawData[0][k] === "string" && !isNumeric(rawData[0][k]));
+  const stringCols = keys.filter(
+    (k) => typeof rawData[0][k] === "string" && !isNumeric(rawData[0][k]),
+  );
   const numCols = keys.filter((k) => isNumeric(rawData[0][k]));
 
   // Row dimension = first string col
@@ -308,10 +315,7 @@ export const normaliseForHeatmap = (rawData) => {
   const colLabels = [...new Map(rawData.map((r) => [r[colKey], true])).keys()];
 
   const cellMap = new Map(
-    rawData.map((r) => [
-      `${r[rowKey]}||${r[colKey]}`,
-      toNumber(r[valueKey]),
-    ]),
+    rawData.map((r) => [`${r[rowKey]}||${r[colKey]}`, toNumber(r[valueKey])]),
   );
 
   const allValues = [...cellMap.values()];
@@ -342,9 +346,11 @@ export const normaliseForKpi = (rawData) => {
     return { value: null, label: "—", secondaryStats: [], rawRows: [] };
 
   const keys = Object.keys(rawData[0]);
-  const numericKey =
-    keys.find((k) => isNumeric(rawData[0][k])) ?? keys[0];
-  const labelKey = keys.find((k) => typeof rawData[0][k] === "string" && !isNumeric(rawData[0][k])) ?? null;
+  const numericKey = keys.find((k) => isNumeric(rawData[0][k])) ?? keys[0];
+  const labelKey =
+    keys.find(
+      (k) => typeof rawData[0][k] === "string" && !isNumeric(rawData[0][k]),
+    ) ?? null;
 
   // Single value KPI
   if (rawData.length === 1) {
@@ -353,10 +359,7 @@ export const normaliseForKpi = (rawData) => {
       value: row[numericKey] !== undefined ? toNumber(row[numericKey]) : null,
       label: labelKey ? String(row[labelKey]) : numericKey,
       secondaryStats: keys
-        .filter(
-          (k) =>
-            k !== numericKey && k !== labelKey && isNumeric(row[k]),
-        )
+        .filter((k) => k !== numericKey && k !== labelKey && isNumeric(row[k]))
         .map((k) => ({ label: k, value: toNumber(row[k]) })),
       rawRows: rawData,
     };
