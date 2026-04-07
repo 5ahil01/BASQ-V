@@ -427,8 +427,6 @@ const ChartView = ({ data, chartType }) => {
 
   const renderChart = () => {
     try {
-      console.log(type);
-
       switch (type) {
         case "bar":
           return <BarChart norm={norm} horizontal={false} />;
@@ -471,11 +469,7 @@ const ChartView = ({ data, chartType }) => {
     }
   };
 
-  return (
-    <div className="w-full rounded-2xl bg-slate-800/60 border border-white/10 p-6">
-      {renderChart()}
-    </div>
-  );
+  return <div className="w-full rounded-2xl  p-6">{renderChart()}</div>;
 };
 
 ChartView.propTypes = {

@@ -8,7 +8,7 @@ import TableView from "./TableView";
 const Panel = ({ children, className = "" }) => (
   <div
     className={`relative w-full rounded-[20px] border border-white/10
-      bg-slate-800/70 backdrop-blur-xl p-8 shadow-xl
+       backdrop-blur-xl p-8 shadow-xl
       flex flex-col gap-6 overflow-hidden animate-fade-in ${className}`}
   >
     {children}

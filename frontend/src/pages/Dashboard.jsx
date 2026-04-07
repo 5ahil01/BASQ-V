@@ -164,67 +164,76 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="bv-shell">
-      {/* ════ MAIN ════ */}
-      <div className="bv-main">
-        {/* Chat scroll area */}
-        <div className="bv-chat">
-          {/* Welcome state — shown when no response and no error */}
-          {!response && !error && (
-            <div className="bv-welcome">
-              <h1 className="bv-welcome-title">
-                Ask your business data anything
-              </h1>
-              <p className="bv-welcome-sub">
-                BASQ-V understands your business context and delivers precise,
-                source-backed analytics answers — just ask in plain language.
-              </p>
-              <div className="bv-chip-row">
-                {SUGGESTIONS.map((s) => (
-                  <button
-                    key={s}
-                    className="bv-suggestion"
-                    onClick={() => handleQuery(s)}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
+    <div
+      className="bv-shell"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        maxWidth: "1092px",
+        margin: "0 auto",
+      }}
+    >
+      <div
+        className="bv-chat"
+        style={{ flex: 1, overflowY: "auto", padding: "2rem 1rem" }}
+      >
+        {/* Welcome state — shown when no response and no error */}
+        {!response && !error && (
+          <div className="bv-welcome">
+            <h1 className="bv-welcome-title">
+              Ask your business data anything
+            </h1>
+            <p className="bv-welcome-sub">
+              BASQ-V understands your business context and delivers precise,
+              source-backed analytics answers — just ask in plain language.
+            </p>
+            <div className="bv-chip-row">
+              {SUGGESTIONS.map((s) => (
+                <button
+                  key={s}
+                  className="bv-suggestion"
+                  onClick={() => handleQuery(s)}
+                >
+                  {s}
+                </button>
+              ))}
             </div>
-          )}
-
-          {/* Error */}
-          {error && (
-            <div className="bv-error-wrap">
-              <ErrorBox error={error} onClose={handleErrorClose} />
-            </div>
-          )}
-
-          {/* Results */}
-          {response && (
-            <div className="bv-results-wrap">
-              <ResultsPanel response={response} loading={loading} />
-            </div>
-          )}
-        </div>
-
-        {/* Input footer */}
-        <div className="bv-input-footer">
-          <div className="bv-input-label">Ask a business question</div>
-          <div className="bv-input-box px-[100px] ">
-            <QueryInput
-              onSubmit={handleQuery}
-              loading={loading}
-              disabled={loading}
-            />
           </div>
-          <p className="bv-input-hint">
-            <kbd>Enter</kbd> to send &nbsp;·&nbsp; <kbd>Shift+Enter</kbd> for
-            new line
-          </p>
+        )}
+
+        {/* Error */}
+        {error && (
+          <div className="bv-error-wrap">
+            <ErrorBox error={error} onClose={handleErrorClose} />
+          </div>
+        )}
+
+        {/* Results */}
+        {response && (
+          <div className="bv-results-wrap">
+            <ResultsPanel response={response} loading={loading} />
+          </div>
+        )}
+      </div>
+
+      <div
+        className="bv-input-footer"
+        style={{
+          borderTop: "0.5px solid var(--color-border-tertiary)",
+          padding: "0.75rem 1rem 1rem",
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <div style={{ width: "100%", maxWidth: "780px" }}>
+          <QueryInput
+            onSubmit={handleQuery}
+            loading={loading}
+            disabled={loading}
+          />
         </div>
       </div>
-      {/* /bv-main */}
 
       {/* Modals */}
       <ClarificationModal
