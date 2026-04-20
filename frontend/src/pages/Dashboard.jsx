@@ -167,19 +167,28 @@ const Dashboard = () => {
 
   return (
     <div
-      className="bv-shell"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-        maxWidth: "1092px",
-        margin: "0 auto",
-      }}
+      className="bv-layout"
+      style={{ display: "flex", flexDirection: "column", height: "100vh" }}
     >
+      <header style={{ padding: "1.5rem 2rem", width: "100%" }}>
+        <h1 style={{ fontWeight: "bold", color: "black", fontSize: "1.75rem", margin: 0, letterSpacing: "-0.02em" }}>BASQV</h1>
+      </header>
+
       <div
-        className="bv-chat"
-        style={{ flex: 1, overflowY: "auto", padding: "2rem 1rem" }}
+        className="bv-shell"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          maxWidth: "1092px",
+          width: "100%",
+          margin: "0 auto",
+        }}
       >
+        <div
+          className="bv-chat"
+          style={{ flex: 1, overflowY: "auto", padding: "1rem 1rem 2rem" }}
+        >
         {/* Welcome state — shown when no response and no error */}
         {!response && !error && (
           <div className="bv-welcome">
@@ -262,6 +271,7 @@ const Dashboard = () => {
         isLoading={loading}
         message="Analyzing your business data…"
       />
+    </div>
     </div>
   );
 };

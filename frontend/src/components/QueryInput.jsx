@@ -56,21 +56,65 @@ const QueryInput = ({ onSubmit, loading, disabled = false }) => {
           position: "relative",
           background: "var(--color-background-secondary)",
           border: validationError
-            ? "0.5px solid var(--color-border-danger)"
-            : "0.5px solid var(--color-border-secondary)",
-          borderRadius: "50px",
-          padding: "12px 52px 12px 16px",
-          transition: "border-color 0.15s",
+            ? "1px solid var(--color-border-danger)"
+            : "1px solid transparent",
+          borderRadius: "26px",
+          padding: "14px 52px 14px 56px",
+          boxShadow: validationError
+            ? "none"
+            : "0 2px 10px rgba(0, 0, 0, 0.15)",
+          transition: "box-shadow 0.2s, border-color 0.2s, background 0.2s",
         }}
         onFocus={(e) => {
-          if (!validationError)
-            e.currentTarget.style.borderColor = "var(--color-border-primary)";
+          if (!validationError) {
+            e.currentTarget.style.background =
+              "var(--color-background-primary)";
+            e.currentTarget.style.boxShadow = "0 4px 16px rgba(0, 0, 0, 0.25)";
+          }
         }}
         onBlur={(e) => {
-          if (!validationError)
-            e.currentTarget.style.borderColor = "var(--color-border-secondary)";
+          if (!validationError) {
+            e.currentTarget.style.background =
+              "var(--color-background-secondary)";
+            e.currentTarget.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.15)";
+          }
         }}
       >
+        {/* Plus / Attachment icon mimicking Gemini */}
+        <button
+          disabled={loading || disabled}
+          aria-label="Add attachment"
+          style={{
+            position: "absolute",
+            left: "14px",
+            bottom: "12px",
+            width: "32px",
+            height: "32px",
+            borderRadius: "50%",
+            border: "none",
+            background: "transparent",
+            color: "var(--color-text-tertiary)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            transition: "background 0.15s, color 0.15s",
+          }}
+          onMouseEnter={(e) => {
+            if (!disabled && !loading) {
+              e.currentTarget.style.background =
+                "var(--color-border-secondary)";
+              e.currentTarget.style.color = "var(--color-text-secondary)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!disabled && !loading) {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "var(--color-text-tertiary)";
+            }
+          }}
+        ></button>
+
         <textarea
           ref={textareaRef}
           value={inputText}
@@ -89,25 +133,26 @@ const QueryInput = ({ onSubmit, loading, disabled = false }) => {
             outline: "none",
             resize: "none",
             fontFamily: "var(--font-sans)",
-            fontSize: "15px",
-            lineHeight: "1.6",
+            fontSize: "16px",
+            lineHeight: "1.5",
             color: "var(--color-text-primary)",
             minHeight: "24px",
             maxHeight: "180px",
             overflowY: "hidden",
             display: "block",
+            paddingTop: "4px",
           }}
         />
 
-        {/* Send button */}
+        {/* Send button (Gemini-esque upward arrow) */}
         <button
           onClick={handleSubmit}
           disabled={!isActive}
           aria-label="Send query"
           style={{
             position: "absolute",
-            right: "10px",
-            bottom: "10px",
+            right: "12px",
+            bottom: "12px",
             width: "32px",
             height: "32px",
             borderRadius: "50%",
@@ -117,7 +162,7 @@ const QueryInput = ({ onSubmit, loading, disabled = false }) => {
             alignItems: "center",
             justifyContent: "center",
             flexShrink: 0,
-            transition: "background 0.15s, transform 0.1s",
+            transition: "background 0.2s, transform 0.1s, color 0.2s",
             background: isActive
               ? "var(--color-text-primary)"
               : "var(--color-background-tertiary)",
@@ -125,30 +170,32 @@ const QueryInput = ({ onSubmit, loading, disabled = false }) => {
               ? "var(--color-background-primary)"
               : "var(--color-text-tertiary)",
             opacity: loading || disabled ? 0.45 : 1,
+            boxShadow: isActive ? "0 2px 6px rgba(0,0,0,0.1)" : "none",
           }}
           onMouseDown={(e) => {
-            if (isActive) e.currentTarget.style.transform = "scale(0.92)";
+            if (isActive) e.currentTarget.style.transform = "scale(0.9)";
           }}
           onMouseUp={(e) => {
-            e.currentTarget.style.transform = "scale(1)";
+            if (isActive) e.currentTarget.style.transform = "scale(1)";
           }}
         >
           {loading ? (
             <span
               style={{
-                width: "14px",
-                height: "14px",
+                width: "16px",
+                height: "16px",
                 border: "2px solid transparent",
+                borderLeftColor: "currentColor",
                 borderTopColor: "currentColor",
                 borderRadius: "50%",
                 display: "block",
-                animation: "qi-spin 0.7s linear infinite",
+                animation: "qi-spin 0.6s linear infinite",
               }}
             />
           ) : (
             <svg
-              width="15"
-              height="15"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
