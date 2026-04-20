@@ -298,7 +298,6 @@ const KpiCard = ({ rawData }) => {
   );
 };
 
-/* True CSS grid heatmap — no plugin required */
 const HeatmapChart = ({ norm }) => {
   const { rawRows, xKey, yKey } = norm;
   if (!rawRows?.length) return null;

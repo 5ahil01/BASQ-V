@@ -2,17 +2,10 @@ from typing import List, Dict, Any, Optional
 import time
 
 class AdaptiveRetriever:
-    """
-    Implements adaptive retrieval strategy.
-    This is NOVEL - standard RAG uses fixed k.
-    """
+   
     
     def __init__(self, business_rag: Any, quality_assessor: Any):
-        """
-        Args:
-            business_rag: Component 1 instance (must have retrieve_context method)
-            quality_assessor: Component 5 RetrievalQualityAssessor instance
-        """
+        
         self.business_rag = business_rag
         self.assessor = quality_assessor
         self.max_iterations = 5
@@ -95,7 +88,7 @@ class AdaptiveRetriever:
                 break
             
             # Decide how many more to retrieve
-            # The logic in prompt says "retrieve more". IDK if Component 1 supports offset.
+            # The logic in prompt says "retrieve more". 
             # Usually RAG retrievers just take 'k'.
             # So if we want *more*, we should ask for a larger K next time, or ask for next batch?
             # Standard vector DBs: retrieve(k=10) gets top 10.

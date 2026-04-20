@@ -58,7 +58,7 @@ const QueryInput = ({ onSubmit, loading, disabled = false }) => {
           border: validationError
             ? "0.5px solid var(--color-border-danger)"
             : "0.5px solid var(--color-border-secondary)",
-          borderRadius: "16px",
+          borderRadius: "50px",
           padding: "12px 52px 12px 16px",
           transition: "border-color 0.15s",
         }}

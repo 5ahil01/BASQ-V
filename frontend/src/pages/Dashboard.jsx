@@ -220,10 +220,11 @@ const Dashboard = () => {
       <div
         className="bv-input-footer"
         style={{
-          borderTop: "0.5px solid var(--color-border-tertiary)",
           padding: "0.75rem 1rem 1rem",
           display: "flex",
           justifyContent: "center",
+          alignItems: "center",
+          width: "100%",
         }}
       >
         <div style={{ width: "100%", maxWidth: "780px" }}>
