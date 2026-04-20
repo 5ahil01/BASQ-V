@@ -39,7 +39,7 @@ const QueryInput = ({ onSubmit, loading, disabled = false }) => {
       return;
     }
     onSubmit(trimmed);
-    setInputText("");
+    // Removed setInputText("") here to keep the query in the input
     setValidationError("");
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";

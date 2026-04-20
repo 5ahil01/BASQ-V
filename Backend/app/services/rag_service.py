@@ -17,7 +17,7 @@ class RagService:
         self.client = get_qdrant_client()
         self.vector_store = QdrantVectorStore(
             client=self.client,
-            collection_name="sql_schema",
+            collection_name="product_schema",
             embedding=self.embeddings,
         )
         self.llm = ChatGroq(

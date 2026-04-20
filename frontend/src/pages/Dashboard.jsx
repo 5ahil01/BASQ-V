@@ -66,6 +66,7 @@ const Dashboard = () => {
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
   const [activeIdx, setActiveIdx] = useState(null);
+  const [currentQuery, setCurrentQuery] = useState("");
 
   const [clarificationState, setClarificationState] = useState({
     isOpen: false,
@@ -76,6 +77,7 @@ const Dashboard = () => {
 
   const handleQuery = useCallback(
     async (query) => {
+      setCurrentQuery(query);
       setLoading(true);
       setError(null);
       setResponse(null);
@@ -212,6 +214,15 @@ const Dashboard = () => {
         {/* Results */}
         {response && (
           <div className="bv-results-wrap">
+            <h2 style={{
+              fontSize: "1.25rem",
+              fontWeight: "600",
+              color: "var(--color-text-primary)",
+              marginBottom: "1rem",
+              paddingLeft: "0.25rem"
+            }}>
+              {currentQuery}
+            </h2>
             <ResultsPanel response={response} loading={loading} />
           </div>
         )}
